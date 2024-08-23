@@ -1,19 +1,19 @@
 # Predicción de Fraude en Transacciones Financieras
 
 ## Colaboradores
-Andres G Velasquez
+Andres G Velasquez: 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/andres946/)
 [![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-andresgvelasquez8@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:andresgvelasquez8@gmail.com)  
 
-Laura Vasquez
+Laura Vasquez: 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/)
 [![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-lauravasquez112399@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:lauravasquez112399@gmail.com)  
 
-Tómas Bejarano
+Tómas Bejarano: 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/)
 [![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-tomasbejaranogonzalez@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:tomasbejaranogonzalez@gmail.com)  
 
-Figueroa Cynthia
+Figueroa Cynthia: 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/)
 [![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-cynthiafigueroa125@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:cynthiafigueroa125@gmail.com)  
 
