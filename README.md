@@ -20,7 +20,7 @@ Figueroa Cynthia:
 ## Descripción
 Desarrollar un modelo predictivo para detectar transacciones fraudulentas en una plataforma de pagos electrónicos, utilizando técnicas de aprendizaje automático y análisis de comportamiento.
 
-#" Tecnolgías
+## Tecnolgías
 ![Python](https://img.shields.io/badge/-Python-blue?style=for-the-badge&logo=python&logoColor=white&logoWidth=40)
 ![Pandas](https://img.shields.io/badge/-Pandas-blue?style=for-the-badge&logo=pandas&logoColor=white)
 ![NumPy](https://img.shields.io/badge/-NumPy-blue?style=for-the-badge&logo=numpy&logoColor=white)
