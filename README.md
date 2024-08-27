@@ -6,16 +6,12 @@ Andres G Velasquez:
 [![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-andresgvelasquez8@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:andresgvelasquez8@gmail.com)  
 
 Laura Vasquez: 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/laura-cristina-vasquez-analistadedatos)
 [![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-lauravasquez112399@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:lauravasquez112399@gmail.com)  
 
 Tómas Bejarano: 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/tomas-bejarano-885581a8/)
 [![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-tomasbejaranogonzalez@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:tomasbejaranogonzalez@gmail.com)  
-
-Figueroa Cynthia: 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/)
-[![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-cynthiafigueroa125@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:cynthiafigueroa125@gmail.com)  
 
 ## Descripción
 Desarrollar un modelo predictivo para detectar transacciones fraudulentas en una plataforma de pagos electrónicos, utilizando técnicas de aprendizaje automático y análisis de comportamiento.
