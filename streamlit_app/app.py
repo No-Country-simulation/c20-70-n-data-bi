@@ -3,6 +3,8 @@ import streamlit as st
 import pandas as pd
 from preprocessing import preprocessing_data
 from utils import extract_csv_from_zip
+import zipfile
+import tempfile
 
 # Ajustar el ancho para toda la pantalla 
 st.set_page_config(page_title="Detección de Fraude", layout="wide")
@@ -15,15 +17,41 @@ uploaded_file = st.file_uploader("Sube tu archivo CSV en formato .zip", type=["z
 
 if uploaded_file is not None:
     st.write("Archivo subido con éxito!")
+    
+    # Crear un archivo temporal para guardar el archivo subido
+    with tempfile.TemporaryDirectory() as temp_dir:
+        zip_path = os.path.join(temp_dir, "temp.zip")
 
-    # Extraer el archivo .zip
-    data = extract_csv_from_zip(uploaded_file)
+        # Guardar el archivo zip subido en el directorio temporal
+        with open(zip_path, "wb") as f:
+            f.write(uploaded_file.getvalue())
 
-    if data is not None:
-        # Mostrar los datos del CSV
-        st.dataframe(data.head())
-    else:
-        st.error("El archivo .zip no contiene un archivo CSV válido o contiene múltiples archivos.")
+        # Descomprimir el archivo zip
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(temp_dir)
+
+        # Buscar archivos CSV en el directorio temporal
+        extracted_files = [f for f in os.listdir(temp_dir) if f.endswith('.csv')]
+
+        if len(extracted_files) == 1:
+            csv_file_path = os.path.join(temp_dir, extracted_files[0])
+
+            # Leer el archivo CSV usando chunksize para no cargar todo en memoria
+            try:
+                chunk_list = []
+                for chunk in pd.read_csv(csv_file_path, chunksize=10000):
+                    chunk_list.append(chunk)
+                
+                # Unir los chunks en un solo DataFrame
+                df = pd.concat(chunk_list)
+
+                # Mostrar los primeros 100 registros en Streamlit
+                st.dataframe(df.head(100))
+
+            except Exception as e:
+                st.error(f"Error al procesar el archivo CSV: {e}")
+        else:
+            st.error("El archivo .zip no contiene un archivo CSV válido o contiene múltiples archivos.")
 
 
 # if uploaded_file is not None:
