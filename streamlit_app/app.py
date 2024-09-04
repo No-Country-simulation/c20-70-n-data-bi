@@ -10,6 +10,7 @@ st.set_page_config(page_title="Detección de Fraude", layout="wide")
 st.title("Detección de Fraude en Transacciones con Tarjetas de Crédito")
 
 # uploaded_file = st.file_uploader("Sube la primera parte del archivo CSV", type=["csv"], key="1")
+# Subir el archivo .zip
 uploaded_file = st.file_uploader("Sube tu archivo CSV en formato .zip", type=["zip"], key="1")
 
 if uploaded_file is not None:
@@ -18,15 +19,11 @@ if uploaded_file is not None:
     # Extraer el archivo .zip
     data = extract_csv_from_zip(uploaded_file)
 
-    # Lista los archivos extraídos
-    #extracted_files = os.listdir(temp_dir)
-
     if data is not None:
         # Mostrar los datos del CSV
         st.dataframe(data.head())
     else:
         st.error("El archivo .zip no contiene un archivo CSV válido o contiene múltiples archivos.")
-
 
 
 # if uploaded_file is not None:

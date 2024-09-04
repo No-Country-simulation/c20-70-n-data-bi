@@ -117,16 +117,16 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
-# Función para extraer y leer el archivo CSV del zip
+# Función para extraer el CSV desde el archivo .zip
 def extract_csv_from_zip(uploaded_file):
     try:
         with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
             # Obtener la lista de archivos en el zip
             file_names = zip_ref.namelist()
+            st.write("Archivos en el ZIP:", file_names)  # Para depuración, imprime los archivos dentro del ZIP
             
             # Verificar que solo hay un archivo CSV
             if len(file_names) != 1 or not file_names[0].endswith('.csv'):
-                st.error("El archivo .zip debe contener exactamente un archivo CSV.")
                 return None
             
             # Leer el archivo CSV
