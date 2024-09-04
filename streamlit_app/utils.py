@@ -117,22 +117,25 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
-# Función para extraer el CSV desde el archivo .zip
-def extract_csv_from_zip(uploaded_file):
+def extract_csv_from_zip(uploaded_file, chunksize=10000):
     try:
         with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
             # Obtener la lista de archivos en el zip
             file_names = zip_ref.namelist()
-            st.write("Archivos en el ZIP:", file_names)  # Para depuración, imprime los archivos dentro del ZIP
+            st.write("Archivos en el ZIP:", file_names)
             
-            # Verificar que solo hay un archivo CSV
             if len(file_names) != 1 or not file_names[0].endswith('.csv'):
                 return None
             
-            # Leer el archivo CSV
+            # Leer el archivo CSV en partes
             csv_file = file_names[0]
             with zip_ref.open(csv_file) as my_file:
-                df = pd.read_csv(my_file)
+                chunk_list = []
+                for chunk in pd.read_csv(my_file, chunksize=chunksize):
+                    chunk_list.append(chunk)
+                
+                # Unir los chunks en un solo DataFrame
+                df = pd.concat(chunk_list)
                 return df
     except Exception as e:
         st.error(f"Error al extraer el archivo: {e}")
