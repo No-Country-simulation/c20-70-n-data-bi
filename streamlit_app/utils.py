@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 from math import radians, sin, cos, sqrt, atan2
 import zipfile
+import streamlit as st
 
 def fraud_pct_by_column(data, column, target, fraud_pct_col_name, rank_col_name):
     # Agrupar por columna y obtener la cantidad de ventas y cantidad de fraudes
@@ -116,11 +117,23 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
-def extract_zip(uploaded_file, extract_to='temp_dir'):
-    os.makedirs(extract_to, exist_ok=True)
-    # Guarda el archivo zip temporalmente
-    with open(os.path.join(extract_to, 'temp.zip'), 'wb') as f:
-        f.write(uploaded_file.read())
-    # Extrae el contenido del archivo zip
-    with zipfile.ZipFile(os.path.join(extract_to, 'temp.zip'), 'r') as zip_ref:
-        zip_ref.extractall(extract_to)
+# Función para extraer y leer el archivo CSV del zip
+def extract_csv_from_zip(uploaded_file):
+    try:
+        with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
+            # Obtener la lista de archivos en el zip
+            file_names = zip_ref.namelist()
+            
+            # Verificar que solo hay un archivo CSV
+            if len(file_names) != 1 or not file_names[0].endswith('.csv'):
+                st.error("El archivo .zip debe contener exactamente un archivo CSV.")
+                return None
+            
+            # Leer el archivo CSV
+            csv_file = file_names[0]
+            with zip_ref.open(csv_file) as my_file:
+                df = pd.read_csv(my_file)
+                return df
+    except Exception as e:
+        st.error(f"Error al extraer el archivo: {e}")
+        return None

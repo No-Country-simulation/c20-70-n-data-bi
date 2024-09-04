@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 from preprocessing import preprocessing_data
-from utils import extract_zip
+from utils import extract_csv_from_zip
 
 # Ajustar el ancho para toda la pantalla 
 st.set_page_config(page_title="Detección de Fraude", layout="wide")
@@ -15,28 +15,15 @@ uploaded_file = st.file_uploader("Sube tu archivo CSV en formato .zip", type=["z
 if uploaded_file is not None:
     st.write("Archivo subido con éxito!")
 
-    # Directorio temporal para la extracción
-    temp_dir = 'temp_dir'
-
     # Extraer el archivo .zip
-    extract_zip(uploaded_file, temp_dir)
+    data = extract_csv_from_zip(uploaded_file)
 
     # Lista los archivos extraídos
-    extracted_files = os.listdir(temp_dir)
+    #extracted_files = os.listdir(temp_dir)
 
-    if len(extracted_files) == 1 and extracted_files[0].endswith('.csv'):
-        csv_file_path = os.path.join(temp_dir, extracted_files[0])
-
-        # Leer el archivo CSV
-        df = pd.read_csv(csv_file_path)
-
+    if data is not None:
         # Mostrar los datos del CSV
-        st.write(f"Datos del archivo {extracted_files[0]}:")
-        st.dataframe(df.head())
-
-        # Limpiar directorio temporal después de mostrar los datos
-        os.remove(csv_file_path)
-        os.rmdir(temp_dir)
+        st.dataframe(data.head())
     else:
         st.error("El archivo .zip no contiene un archivo CSV válido o contiene múltiples archivos.")
 
