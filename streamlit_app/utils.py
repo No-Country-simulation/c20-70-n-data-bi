@@ -1,6 +1,8 @@
+import os
 import pandas as pd
 from datetime import datetime
 from math import radians, sin, cos, sqrt, atan2
+from pyunpack import Archive
 
 def fraud_pct_by_column(data, column, target, fraud_pct_col_name, rank_col_name):
     # Agrupar por columna y obtener la cantidad de ventas y cantidad de fraudes
@@ -113,3 +115,12 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     a = sin(dlat / 2)**2 + cos(lat1_rad) * cos(lat2_rad) * sin(dlon / 2)**2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
+
+def extract_rar(uploaded_file, extract_to='temp_dir'):
+    os.makedirs(extract_to, exist_ok=True)
+    # Guarda el archivo rar temporalmente
+    with open(os.path.join(extract_to, 'temp.rar'), 'wb') as f:
+        f.write(uploaded_file.read())
+    # Extrae el contenido del archivo rar
+    Archive(os.path.join(extract_to, 'temp.rar')).extractall(extract_to)
+    os.remove(os.path.join(extract_to, 'temp.rar'))
