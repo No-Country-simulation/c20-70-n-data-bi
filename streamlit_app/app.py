@@ -10,7 +10,7 @@ st.set_page_config(page_title="Detección de Fraude", layout="wide")
 st.title("Detección de Fraude en Transacciones con Tarjetas de Crédito")
 
 # uploaded_file = st.file_uploader("Sube la primera parte del archivo CSV", type=["csv"], key="1")
-uploaded_file = st.file_uploader("Sube tu archivo CSV en formato .rar", type=["rar"], key="1")
+uploaded_file = st.file_uploader("Sube tu archivo CSV en formato .zip", type=["zip"], key="1")
 
 if uploaded_file is not None:
     st.write("Archivo subido con éxito!")
