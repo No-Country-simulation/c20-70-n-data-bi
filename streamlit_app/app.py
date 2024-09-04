@@ -11,7 +11,6 @@ st.set_page_config(page_title="Detección de Fraude", layout="wide")
 
 st.title("Detección de Fraude en Transacciones con Tarjetas de Crédito")
 
-# uploaded_file = st.file_uploader("Sube la primera parte del archivo CSV", type=["csv"], key="1")
 # Subir el archivo .zip
 uploaded_file = st.file_uploader("Sube tu archivo CSV en formato .zip", type=["zip"], key="1")
 
@@ -38,15 +37,21 @@ if uploaded_file is not None:
 
             # Leer el archivo CSV usando chunksize para no cargar todo en memoria
             try:
-                chunk_list = []
-                for chunk in pd.read_csv(csv_file_path, chunksize=10000):
-                    chunk_list.append(chunk)
-                
-                # Unir los chunks en un solo DataFrame
-                df = pd.concat(chunk_list)
+                st.write("Procesando archivo en chunks...")
 
-                # Mostrar los primeros 100 registros en Streamlit
-                st.dataframe(df.head(100))
+                # Mostrar solo los primeros N registros en la tabla (por ejemplo, 100 filas)
+                rows_to_display = 100
+                rows_processed = 0
+
+                # Procesar en chunks
+                for chunk in pd.read_csv(csv_file_path, chunksize=10000):
+                    # Mostrar los primeros registros hasta completar `rows_to_display`
+                    if rows_processed < rows_to_display:
+                        remaining_rows = rows_to_display - rows_processed
+                        st.dataframe(chunk.head(remaining_rows))
+                        rows_processed += len(chunk.head(remaining_rows))
+                    else:
+                        break
 
             except Exception as e:
                 st.error(f"Error al procesar el archivo CSV: {e}")
