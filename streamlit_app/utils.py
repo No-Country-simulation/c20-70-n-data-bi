@@ -3,7 +3,9 @@ import pandas as pd
 from datetime import datetime
 from math import radians, sin, cos, sqrt, atan2
 import zipfile
+from catboost import CatBoostClassifier
 import streamlit as st
+from sklearn.metrics import accuracy_score, classification_report
 
 def fraud_pct_by_column(data, column, target, fraud_pct_col_name, rank_col_name):
     # Agrupar por columna y obtener la cantidad de ventas y cantidad de fraudes
@@ -117,26 +119,42 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
 
-def extract_csv_from_zip(uploaded_file, chunksize=10000):
-    try:
-        with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
-            # Obtener la lista de archivos en el zip
-            file_names = zip_ref.namelist()
-            st.write("Archivos en el ZIP:", file_names)
-            
-            if len(file_names) != 1 or not file_names[0].endswith('.csv'):
-                return None
-            
-            # Leer el archivo CSV en partes
-            csv_file = file_names[0]
-            with zip_ref.open(csv_file) as my_file:
-                chunk_list = []
-                for chunk in pd.read_csv(my_file, chunksize=chunksize):
-                    chunk_list.append(chunk)
-                
-                # Unir los chunks en un solo DataFrame
-                df = pd.concat(chunk_list)
-                return df
-    except Exception as e:
-        st.error(f"Error al extraer el archivo: {e}")
-        return None
+def extract_zip_to_csv(uploaded_file, temp_dir):
+    """
+    Extrae un archivo zip, busca un archivo CSV dentro y lo convierte a csv.
+    """
+    zip_path = os.path.join(temp_dir, "temp.zip")
+
+    # Guardar el archivo zip subido en el directorio temporal
+    with open(zip_path, "wb") as f:
+        f.write(uploaded_file.getvalue())
+
+    # Descomprimir el archivo zip
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        zip_ref.extractall(temp_dir)
+
+    # Buscar archivos CSV en el directorio temporal
+    extracted_files = [f for f in os.listdir(temp_dir) if f.endswith('.csv')]
+
+    return extracted_files
+
+
+def catboost_model(features_scaled, target, path_catboost_model):
+    
+    # Aplicar el modelo Catboost
+    model = CatBoostClassifier()
+    model.load_model(path_catboost_model)  # Cargar el modelo pre-entrenado
+    predictions = model.predict(features_scaled)                   # Hacer predicciones
+
+    # Mostrar las predicciones
+    st.write("Mostrando las primeras 5 predicciones:")
+    st.dataframe(pd.DataFrame(predictions, columns=['Predicción']).head())
+
+    # Mostrar el objetivo real
+    st.write("Mostrando las primeras 5 reales:")
+    st.dataframe(target.head())
+
+    # Evaluar el modelo
+    accuracy = accuracy_score(target, predictions)
+    report = classification_report(target, predictions)
+    return predictions, accuracy, report
