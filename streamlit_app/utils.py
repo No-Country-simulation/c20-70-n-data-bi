@@ -6,6 +6,7 @@ import zipfile
 from catboost import CatBoostClassifier
 import streamlit as st
 from sklearn.metrics import accuracy_score, classification_report
+import tempfile
 
 def fraud_pct_by_column(data, column, target, fraud_pct_col_name, rank_col_name):
     # Agrupar por columna y obtener la cantidad de ventas y cantidad de fraudes
@@ -139,11 +140,7 @@ def extract_zip_to_csv(uploaded_file, temp_dir):
     return extracted_files
 
 
-def catboost_model(features_scaled, target, path_catboost_model):
-    
-    # Aplicar el modelo Catboost
-    model = CatBoostClassifier()
-    model.load_model(path_catboost_model)  # Cargar el modelo pre-entrenado
+def catboost_model(features_scaled, target, model):
     predictions = model.predict(features_scaled)                   # Hacer predicciones
 
     # Mostrar las predicciones
@@ -158,3 +155,18 @@ def catboost_model(features_scaled, target, path_catboost_model):
     accuracy = accuracy_score(target, predictions)
     report = classification_report(target, predictions)
     return predictions, accuracy, report
+
+def extract_zip_to_model(zip_path, name_model):
+    # Crear un directorio temporal para extraer el archivo
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            # Extraer el archivo .cbm dentro del directorio temporal
+            zip_ref.extractall(tmpdirname)
+
+            # Suponiendo que el archivo .cbm está dentro del zip con este nombre:
+            model_path = os.path.join(tmpdirname, name_model) 
+
+            # Cargar el modelo de CatBoost
+            model = CatBoostClassifier()
+            model.load_model(model_path)
+            return model

@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 from preprocessing import preprocessing_data
-from utils import catboost_model, extract_zip_to_csv
+from utils import catboost_model, extract_zip_to_csv, extract_zip_to_model
 import tempfile
 import joblib
 from sklearn.metrics import accuracy_score, classification_report
@@ -67,7 +67,9 @@ if uploaded_file is not None:
 
                 # Aplicar el modelo Catboost
                 st.subheader("Predicciones de fraude con Catboost")
-                predictions, accuracy, report = catboost_model(features_scaled, target, 'streamlit_app/catboost_model_2.cbm')
+                model = extract_zip_to_model("streamlit_app/catboost_model_2.zip", "catboost_model_2.cbm")        # Extraer el modelo.zip
+
+                predictions, accuracy, report = catboost_model(features_scaled, target, model)
 
                 # Calcular las predicciones seguras y las de fraude
                 fraud_trans_cnt = predictions.sum()
