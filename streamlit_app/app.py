@@ -45,6 +45,10 @@ if uploaded_file is not None:
                 st.write("Creando nuevas características...")
                 data_clean = preprocessing_data(df)
 
+                ###### PRUEBA #############
+                st.dataframe(data_clean.head())
+                ###########################
+
                 # Dividir el dataset en características y target
                 features = data_clean.drop("is_fraud", axis=1)
                 target = data_clean["is_fraud"]
@@ -70,7 +74,7 @@ if uploaded_file is not None:
                 st.subheader("Predicciones de fraude con Catboost")
                 #model = extract_zip_to_model("streamlit_app/catboost_model_2.zip", "catboost_model_1.cbm")        # Extraer el modelo.zip
                 model = CatBoostClassifier()
-                model.load_model('streamlit_app/catboost_model.cbm')
+                model.load_model('streamlit_app/catboost_bestmodel.cbm')
                 st.write("Modelo cargado.")
                 predictions, accuracy, report = catboost_model(features_scaled, target, model)
 
