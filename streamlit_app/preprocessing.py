@@ -49,7 +49,7 @@ def preprocessing_data(data):
    data_ohe = pd.concat([data, data_ohe], axis=1)
 
    # Eliminar columnas redundantes o con poca información para el modelo
-   data_ohe.drop(columns=['Unnamed: 0.1', 'Unnamed: 0', 'cc_num', 'first', 'last', 'street', 'unix_time', 'trans_num',
+   data_ohe.drop(columns=['Unnamed: 0', 'cc_num', 'first', 'last', 'street', 'unix_time', 'trans_num',
                            'merchant', 'city', 'state', 'job', 'job_sector', 'trans_date_trans_time', 
                            'dob', 'lat', 'long', 'merch_lat', 'merch_long', 'category', 'gender'], axis=1, inplace=True)
 
