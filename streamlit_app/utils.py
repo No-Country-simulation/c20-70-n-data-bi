@@ -157,26 +157,28 @@ def catboost_model(features_scaled, target, model):
     report = classification_report(target, predictions)
     return predictions, accuracy, report
 
-def extract_zip_to_model(zip_path, name_model):
+def extract_zip_to_model(zip_file, name_model):
     try:
-        # Leer el archivo ZIP en memoria
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            # Filtrar los archivos y extraer el que necesitas
-            for file_name in zip_ref.namelist():
-                if file_name.endswith(name_model):
-                    # Cargar el archivo del modelo directamente en memoria
-                    with zip_ref.open(file_name) as model_file:
-                        model_data = model_file.read()
-                    
-                    # Guardar temporalmente en un archivo de memoria
-                    model_path = io.BytesIO(model_data)
+        # Crear un archivo temporal para el ZIP
+        with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_zip_file:
+            tmp_zip_file.write(zip_file.read())  # Guardar el archivo ZIP temporalmente
 
-                    # Cargar el modelo de CatBoost
-                    model = CatBoostClassifier()
-                    model.load_model(model_path)
-                    return model
-            else:
-                raise FileNotFoundError(f'{name_model} no encontrado en el archivo ZIP.')
+        # Extraer el archivo .cbm dentro de un directorio temporal
+        with zipfile.ZipFile(tmp_zip_file.name, 'r') as zip_ref:
+            with tempfile.TemporaryDirectory() as tmpdirname:
+                # Filtrar y extraer solo el archivo de modelo necesario
+                for file_name in zip_ref.namelist():
+                    if file_name.endswith(name_model):
+                        zip_ref.extract(file_name, tmpdirname)
+                        model_path = os.path.join(tmpdirname, file_name)
+                        break
+                else:
+                    raise FileNotFoundError(f'{name_model} no encontrado en el archivo ZIP.')
+
+            # Cargar el modelo CatBoost
+            model = CatBoostClassifier()
+            model.load_model(model_path)
+            return model
 
     except Exception as e:
         print(f"Error al extraer o cargar el modelo: {e}")
