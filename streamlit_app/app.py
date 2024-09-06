@@ -56,7 +56,7 @@ if uploaded_file is not None:
                                'trans_weekday', 'age', 'distance_to_merch']
                 # Obtener el directorio actual de trabajo
                 current_directory = os.getcwd()
-                print(f"Directorio actual: {current_directory}")
+                st.write(f"Directorio actual: {current_directory}")
                 scaler = joblib.load("streamlit_app/scaler.pkl") # Cargar el escalador de datos éstandar
                 features_scaled = features.copy()
                 features_scaled[cols_to_scale] = scaler.transform(features[cols_to_scale])
