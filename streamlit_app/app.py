@@ -68,9 +68,10 @@ if uploaded_file is not None:
                 # Aplicar el modelo Catboost
                 st.subheader("Predicciones de fraude con Catboost")
                 model = extract_zip_to_model("streamlit_app/catboost_model_2.zip", "catboost_model_2.cbm")        # Extraer el modelo.zip
-
+                st.write("Modelo cargado.")
                 predictions, accuracy, report = catboost_model(features_scaled, target, model)
-
+                st.write("Predicciones terminadas.")
+                
                 # Calcular las predicciones seguras y las de fraude
                 fraud_trans_cnt = predictions.sum()
                 trans_cnt = predictions.size
@@ -80,7 +81,7 @@ if uploaded_file is not None:
                 print(f'Cantidad de transacciones: {trans_cnt}')
                 print(f'Porcentaje de fraudes {fraud_trans_pct:.2f}%')
                 
-                st.subheader("Transaccionoes Seguras vs Fraudes")
+                st.subheader("Transacciones Seguras vs Fraudes")
                 # Datos para el gráfico de dona
                 labels = ['Fraudes', 'Transacciones seguras']
                 values = [fraud_trans_cnt, safety_trans_cnt]
