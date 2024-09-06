@@ -49,11 +49,14 @@ if uploaded_file is not None:
                 target = data_clean["is_fraud"]
 
                 # Escalar las características
+                st.write("Escalando los datos...")
                 cols_to_scale=['amt', 'zip', 'city_pop', 'fraud_merch_pct', 'fraud_merch_rank', 
                                'fraud_city_pct', 'fraud_city_rank', 'fraud_state_pct', 'fraud_state_rank',
                                'job_encoded', 'trans_day', 'trans_month', 'trans_year', 'trans_hour', 
                                'trans_weekday', 'age', 'distance_to_merch']
-                st.write("Escalando los datos...")
+                # Obtener el directorio actual de trabajo
+                current_directory = os.getcwd()
+                print(f"Directorio actual: {current_directory}")
                 scaler = joblib.load("streamlit_app/scaler.pkl") # Cargar el escalador de datos éstandar
                 features_scaled = features.copy()
                 features_scaled[cols_to_scale] = scaler.transform(features[cols_to_scale])
@@ -71,7 +74,7 @@ if uploaded_file is not None:
                 st.write("Modelo cargado.")
                 predictions, accuracy, report = catboost_model(features_scaled, target, model)
                 st.write("Predicciones terminadas.")
-                
+
                 # Calcular las predicciones seguras y las de fraude
                 fraud_trans_cnt = predictions.sum()
                 trans_cnt = predictions.size
