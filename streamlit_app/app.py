@@ -7,6 +7,7 @@ import tempfile
 import joblib
 from sklearn.metrics import accuracy_score, classification_report
 import plotly.graph_objects as go
+from catboost import CatBoostClassifier
 
 # Ajustar el ancho para toda la pantalla 
 st.set_page_config(page_title="Detección de Fraude", layout="wide")
@@ -54,9 +55,6 @@ if uploaded_file is not None:
                                'fraud_city_pct', 'fraud_city_rank', 'fraud_state_pct', 'fraud_state_rank',
                                'job_encoded', 'trans_day', 'trans_month', 'trans_year', 'trans_hour', 
                                'trans_weekday', 'age', 'distance_to_merch']
-                # Obtener el directorio actual de trabajo
-                current_directory = os.getcwd()
-                st.write(f"Directorio actual: {current_directory}")
                 scaler = joblib.load("streamlit_app/scaler.pkl") # Cargar el escalador de datos éstandar
                 features_scaled = features.copy()
                 features_scaled[cols_to_scale] = scaler.transform(features[cols_to_scale])
@@ -70,10 +68,14 @@ if uploaded_file is not None:
 
                 # Aplicar el modelo Catboost
                 st.subheader("Predicciones de fraude con Catboost")
-                model = extract_zip_to_model("streamlit_app/catboost_model_2.zip", "catboost_model_2.cbm")        # Extraer el modelo.zip
+                #model = extract_zip_to_model("streamlit_app/catboost_model_2.zip", "catboost_model_1.cbm")        # Extraer el modelo.zip
+                model = CatBoostClassifier()
+                model.load_model('streamlit_app/catboost_model.cbm')
                 st.write("Modelo cargado.")
                 predictions, accuracy, report = catboost_model(features_scaled, target, model)
-                st.write("Predicciones terminadas.")
+
+                print(accuracy)
+                print(report)
 
                 # Calcular las predicciones seguras y las de fraude
                 fraud_trans_cnt = predictions.sum()

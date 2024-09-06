@@ -1,8 +1,6 @@
 import pandas as pd
 from utils import assign_sector, datetime_split, dob_to_age, fraud_pct_by_column, haversine_distance
 import joblib
-import os
-import streamlit as st
 
 def preprocessing_data(data):
 
