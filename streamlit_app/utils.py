@@ -7,6 +7,7 @@ from catboost import CatBoostClassifier
 import streamlit as st
 from sklearn.metrics import accuracy_score, classification_report
 import tempfile
+import io
 
 def fraud_pct_by_column(data, column, target, fraud_pct_col_name, rank_col_name):
     # Agrupar por columna y obtener la cantidad de ventas y cantidad de fraudes
@@ -158,23 +159,25 @@ def catboost_model(features_scaled, target, model):
 
 def extract_zip_to_model(zip_path, name_model):
     try:
-        # Crear un directorio temporal para extraer el archivo
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                # Filtrar los archivos y extraer solo el que necesitas
-                for file_name in zip_ref.namelist():
-                    if file_name.endswith(name_model):
-                        zip_ref.extract(file_name, tmpdirname)
-                        model_path = os.path.join(tmpdirname, file_name)
-                        break
-                else:
-                    raise FileNotFoundError(f'{name_model} no encontrado en el archivo ZIP.')
+        # Leer el archivo ZIP en memoria
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            # Filtrar los archivos y extraer el que necesitas
+            for file_name in zip_ref.namelist():
+                if file_name.endswith(name_model):
+                    # Cargar el archivo del modelo directamente en memoria
+                    with zip_ref.open(file_name) as model_file:
+                        model_data = model_file.read()
+                    
+                    # Guardar temporalmente en un archivo de memoria
+                    model_path = io.BytesIO(model_data)
 
-            # Cargar el modelo de CatBoost
-            model = CatBoostClassifier()
-            model.load_model(model_path)
-            return model
-            
+                    # Cargar el modelo de CatBoost
+                    model = CatBoostClassifier()
+                    model.load_model(model_path)
+                    return model
+            else:
+                raise FileNotFoundError(f'{name_model} no encontrado en el archivo ZIP.')
+
     except Exception as e:
         print(f"Error al extraer o cargar el modelo: {e}")
         return None
