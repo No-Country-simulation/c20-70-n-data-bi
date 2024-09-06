@@ -34,9 +34,6 @@ def preprocessing_data(data):
     data["distance_to_merch"] = data.apply(lambda row: haversine_distance(row['lat'], row['long'], row['merch_lat'], row['merch_long']), axis=1)
 
     # One Hot Encoding para las categorias sin orden 
-
-    current_directory = os.getcwd()
-    st.write(f"Directorio actual: {current_directory}")
     encoder = joblib.load('streamlit_app/onehotencoder.pkl') # Cargar el codificador desde el archivo
     #data_ohe = pd.get_dummies(data, columns=['category', 'gender'], drop_first=True)
     data_ohe = encoder.transform(data[['category', 'gender']])
