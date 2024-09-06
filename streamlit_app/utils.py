@@ -157,16 +157,24 @@ def catboost_model(features_scaled, target, model):
     return predictions, accuracy, report
 
 def extract_zip_to_model(zip_path, name_model):
-    # Crear un directorio temporal para extraer el archivo
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            # Extraer el archivo .cbm dentro del directorio temporal
-            zip_ref.extractall(tmpdirname)
-
-            # Suponiendo que el archivo .cbm está dentro del zip con este nombre:
-            model_path = os.path.join(tmpdirname, name_model) 
+    try:
+        # Crear un directorio temporal para extraer el archivo
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                # Filtrar los archivos y extraer solo el que necesitas
+                for file_name in zip_ref.namelist():
+                    if file_name.endswith(name_model):
+                        zip_ref.extract(file_name, tmpdirname)
+                        model_path = os.path.join(tmpdirname, file_name)
+                        break
+                else:
+                    raise FileNotFoundError(f'{name_model} no encontrado en el archivo ZIP.')
 
             # Cargar el modelo de CatBoost
             model = CatBoostClassifier()
             model.load_model(model_path)
             return model
+            
+    except Exception as e:
+        print(f"Error al extraer o cargar el modelo: {e}")
+        return None
