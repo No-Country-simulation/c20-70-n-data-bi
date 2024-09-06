@@ -9,25 +9,38 @@ from sklearn.metrics import accuracy_score, classification_report
 import tempfile
 import io
 
-def fraud_pct_by_column(data, column, target, fraud_pct_col_name, rank_col_name):
-    # Agrupar por columna y obtener la cantidad de ventas y cantidad de fraudes
-    group_fraud_by_column = data.groupby(column).agg(
-        total_sales=(target, 'count'),
-        fraud_sales=(target, 'sum')
-    )
+# def fraud_pct_by_column(data, column, target, fraud_pct_col_name, rank_col_name):
+#     # Agrupar por columna y obtener la cantidad de ventas y cantidad de fraudes
+#     group_fraud_by_column = data.groupby(column).agg(
+#         total_sales=(target, 'count'),
+#         fraud_sales=(target, 'sum')
+#     )
 
-    # Calcular el porcentaje de fraude en las ventas para cada valor
+#     # Calcular el porcentaje de fraude en las ventas para cada valor
+#     group_fraud_by_column[fraud_pct_col_name] = (group_fraud_by_column['fraud_sales'] / group_fraud_by_column['total_sales']) * 100
+#     group_fraud_by_column = group_fraud_by_column.reset_index()
+
+#     # Rank de los vendedores por porcentaje de fraude
+#     group_fraud_by_column[rank_col_name] = group_fraud_by_column[fraud_pct_col_name].rank(ascending=False)
+
+#     # Unirlo con el df original
+#     data = data.merge(group_fraud_by_column[[column, fraud_pct_col_name, rank_col_name]], on=column,how='left')
+
+#     return data
+
+def fraud_pct_by_column(data, column, group_fraud_by_column, fraud_pct_col_name, rank_col_name):
+
+    # Calcular el porcentaje de fraude para cada valor
     group_fraud_by_column[fraud_pct_col_name] = (group_fraud_by_column['fraud_sales'] / group_fraud_by_column['total_sales']) * 100
     group_fraud_by_column = group_fraud_by_column.reset_index()
 
-    # Rank de los vendedores por porcentaje de fraude
+    # Rank de porcentaje de fraude
     group_fraud_by_column[rank_col_name] = group_fraud_by_column[fraud_pct_col_name].rank(ascending=False)
 
     # Unirlo con el df original
     data = data.merge(group_fraud_by_column[[column, fraud_pct_col_name, rank_col_name]], on=column,how='left')
 
     return data
-
 
 # Se agruparan las profesiones para disminuir la dimensionalidad
 def assign_sector(x):
@@ -159,26 +172,28 @@ def catboost_model(features_scaled, target, model):
 
 def extract_zip_to_model(zip_file, name_model):
     try:
-        # Crear un archivo temporal para el ZIP
-        with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as tmp_zip_file:
-            tmp_zip_file.write(zip_file.read())  # Guardar el archivo ZIP temporalmente
-
         # Extraer el archivo .cbm dentro de un directorio temporal
-        with zipfile.ZipFile(tmp_zip_file.name, 'r') as zip_ref:
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
             with tempfile.TemporaryDirectory() as tmpdirname:
                 # Filtrar y extraer solo el archivo de modelo necesario
+                extracted_files = []
                 for file_name in zip_ref.namelist():
                     if file_name.endswith(name_model):
                         zip_ref.extract(file_name, tmpdirname)
-                        model_path = os.path.join(tmpdirname, file_name)
+                        extracted_file_path = os.path.join(tmpdirname, file_name)
+                        extracted_files.append(extracted_file_path)
                         break
                 else:
                     raise FileNotFoundError(f'{name_model} no encontrado en el archivo ZIP.')
 
-            # Cargar el modelo CatBoost
-            model = CatBoostClassifier()
-            model.load_model(model_path)
-            return model
+                # Imprimir la ruta del archivo extraído y los archivos en el directorio temporal
+                print(f"Archivo extraído en: {extracted_files[0]}")
+                print(f"Archivos en el directorio temporal: {os.listdir(tmpdirname)}")
+
+                # Cargar el modelo CatBoost
+                model = CatBoostClassifier()
+                model.load_model(extracted_files[0])
+                return model
 
     except Exception as e:
         print(f"Error al extraer o cargar el modelo: {e}")
