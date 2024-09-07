@@ -146,14 +146,6 @@ def extract_zip_to_csv(uploaded_file, temp_dir):
 def catboost_model(features_scaled, target, model):
     predictions = model.predict(features_scaled)                   # Hacer predicciones
 
-    # Mostrar las predicciones
-    st.write("Mostrando las primeras 5 predicciones:")
-    st.dataframe(pd.DataFrame(predictions, columns=['Predicción']).head())
-
-    # Mostrar el objetivo real
-    st.write("Mostrando las primeras 5 reales:")
-    st.dataframe(target.head())
-
     # Evaluar el modelo
     accuracy = accuracy_score(target, predictions)
     report = classification_report(target, predictions, output_dict=True)

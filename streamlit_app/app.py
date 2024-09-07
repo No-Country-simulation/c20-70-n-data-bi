@@ -154,25 +154,35 @@ if codigo_acceso == "1":
                         model.load_model('streamlit_app/catboost_bestmodel.cbm')
                         
                         predictions, accuracy, report = catboost_model(features_scaled, target, model)
-                        st.subheader("Métricas del modelo")
-                        st.write(f"Precisión: {accuracy:.2f}")
-                        st.write("Reporte de Clasificación")
-                        st.dataframe(report)
-                        st.text(report)
 
-                        # Calcular las transacciones seguras vs fraudes
-                        fraud_trans_cnt = predictions.sum()
-                        trans_cnt = predictions.size
-                        safety_trans_cnt = trans_cnt - fraud_trans_cnt
-                        fraud_trans_pct = (fraud_trans_cnt / trans_cnt) * 100
-                        
-                        st.subheader("Transacciones Seguras vs Fraudes")
-                        labels = ['Fraudes', 'Transacciones seguras']
-                        values = [fraud_trans_cnt, safety_trans_cnt]
-                        fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.5)])
-                        st.plotly_chart(fig)
-                        st.write(f"Cantidad de Fraudes: {fraud_trans_cnt}")
-                        st.write(f"Cantidad de Transacciones seguras: {safety_trans_cnt}")
+                        # Crear 2 columnas 
+                        col_report, col_model_pct = st.columns(2)
+
+                        # Mostrar dataframes en cada columna
+                        with col_report:
+                            st.subheader("Métricas del modelo")
+                            st.write(f"Precisión del modelo: {accuracy * 100:.1f}%")
+                            # Calcular las transacciones seguras vs fraudes
+                            fraud_trans_cnt = predictions.sum()
+                            trans_cnt = predictions.size
+                            safety_trans_cnt = trans_cnt - fraud_trans_cnt
+                            fraud_trans_pct = (fraud_trans_cnt / trans_cnt) * 100
+                            st.write(f"Se detectaron un total de {fraud_trans_cnt} Fraudes y {safety_trans_cnt} Transacciones seguras.")
+                            st.subheader("Reporte de Clasificación")
+                            st.dataframe(report)
+
+                        with col_model_pct:
+                            st.subheader(" Predicciones: Transacciones Seguras vs Fraudes")
+                            labels = ['Fraudes', 'Transacciones seguras']
+                            values = [fraud_trans_cnt, safety_trans_cnt]
+                            fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.5)])
+                            st.plotly_chart(fig)
+
+                        st.subheader("Predicciones en formato CSV")
+                        st.write("Este dataset contiene 2 columnas:")
+                        st.write("- id_transaction: indicador del ID de la transacción.")
+                        st.write("- is_fraud: indicador de fraude [0 para una transacción segura y 1 para fraude")
+                        st.dataframe(pd.DataFrame(predictions, df["trans_num"]))
 
                 except Exception as e:
                     st.error(f"Error al procesar el archivo CSV: {e}")
