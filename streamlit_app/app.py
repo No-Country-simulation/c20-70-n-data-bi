@@ -194,10 +194,34 @@ if codigo_acceso == "1":
                     with st.expander("Carga a la base de datos PostgreSQL"): 
                         db_conn()
 
+                        # Crear la tabla users
+                        users = df[['cc_num', 'zip', 'first', 'last', 'gender', 'street', 'city', 'state', 'job', 'dob']]
+                        # Mostrar las primeras 5 filas
+                        st.dataframe(users.head())
+
+                        # Crear la tabla locations
+                        locations = df['city', 'state', 'city_pop']
+                        # Mostrar las primeras 5 filas
+                        st.dataframe(locations.head())
+
+                        # Crear la tabla merchants
+                        merchants = df['merchant', 'merch_lat', 'merch_long']
+                        # Mostrar las primeras 5 filas
+                        st.dataframe(merchants.head())
+
+                        # Crear la tabla transactions
+                        transactions = df['trans_date_trans_time', 'cc_num', 'merchant', 'category', 'amt', 'lat', 'long', 'trans_num', 'unix_time']
+                        # Mostrar las primeras 5 filas
+                        st.dataframe(transactions.head())
+
+                        # Mostrar las primeras 5 filas de predictions
+                        st.dataframe(predictions_df.head())
+
                 except Exception as e:
                     st.error(f"Error al procesar el archivo CSV: {e}")
             else:
                 st.error("El archivo .zip no contiene un archivo CSV válido o contiene múltiples archivos.")
+                
 else:
     if codigo_acceso != "":
         st.error("Código incorrecto. Por favor, intenta nuevamente.")
