@@ -2,3 +2,5 @@ pandas
 streamlit
 scikit-learn
 catboost
+psycopg2-binary
+SQLAlchemy

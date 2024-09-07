@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import pandas as pd
 from preprocessing import preprocessing_data
-from utils import catboost_model, extract_zip_to_csv, frauds_per_day
+from utils import db_conn, catboost_model, extract_zip_to_csv, frauds_per_day
 import tempfile
 import joblib
 import plotly.graph_objects as go
@@ -132,8 +132,10 @@ if codigo_acceso == "1":
 
                     with st.expander("Procesamiento de datos e ingeniería de características"):
                         st.subheader("Transformación de datos para el modelo")
-                        st.write("Espere mientras se procesan los datos y se crean nuevas características...")
+                        msg_transdata_loading = st.empty()
+                        msg_transdata_loading.write("Espere mientras se procesan los datos y se crean nuevas características...")
                         data_clean = preprocessing_data(df)
+                        msg_transdata_loading.empty() # Eliminar el mensaje de loading data
                         features = data_clean.drop("is_fraud", axis=1)
                         target = data_clean["is_fraud"]
                         
@@ -149,25 +151,28 @@ if codigo_acceso == "1":
                         st.dataframe(features_scaled.head().style.hide(axis="index"))
 
                     with st.expander("Predicciones de fraude con Catboost"):
-                        st.write("Aplicando el modelo de Machine Learning...")
+                         # Crear un contenedor vacío
+                        msg_ML_loading = st.empty()
+
+                        msg_ML_loading.write("Aplicando el modelo de Machine Learning...")
                         model = CatBoostClassifier()
                         model.load_model('streamlit_app/catboost_bestmodel.cbm')
                         
                         predictions, accuracy, report = catboost_model(features_scaled, target, model)
-
+                        msg_ML_loading.empty() # Borrar el mensaje de aplicando el modelo de machine learning
                         # Crear 2 columnas 
                         col_report, col_model_pct = st.columns(2)
 
                         # Mostrar dataframes en cada columna
                         with col_report:
                             st.subheader("Métricas del modelo")
-                            st.write(f"Precisión del modelo: {accuracy * 100:.1f}%")
+                            st.write(f"Precisión del modelo IA: **{accuracy * 100:.1f}%**")
                             # Calcular las transacciones seguras vs fraudes
                             fraud_trans_cnt = predictions.sum()
                             trans_cnt = predictions.size
                             safety_trans_cnt = trans_cnt - fraud_trans_cnt
                             fraud_trans_pct = (fraud_trans_cnt / trans_cnt) * 100
-                            st.write(f"Se detectaron un total de {fraud_trans_cnt} Fraudes y {safety_trans_cnt} Transacciones seguras.")
+                            st.write(f"Se detectaron un total de **{fraud_trans_cnt} Fraudes** y **{safety_trans_cnt} Transacciones seguras**.")
                             st.subheader("Reporte de Clasificación")
                             st.dataframe(report)
 
@@ -180,9 +185,14 @@ if codigo_acceso == "1":
 
                         st.subheader("Predicciones en formato CSV")
                         st.write("Este dataset contiene 2 columnas:")
-                        st.write("- id_transaction: indicador del ID de la transacción.")
-                        st.write("- is_fraud: indicador de fraude [0 para una transacción segura y 1 para fraude")
-                        st.dataframe(pd.DataFrame(predictions, df["trans_num"]))
+                        st.write("- trans_num: indicador del ID de la transacción.")
+                        st.write("- is_fraud: indicador de fraude: [0] para una transacción segura y [1] para fraude")
+                        predictions_df = pd.DataFrame(predictions, df["trans_num"])
+                        predictions_df.columns = ['is_fraud']
+                        st.dataframe(predictions_df)
+
+                    with st.expander("Carga a la base de datos PostgreSQL"): 
+                        db_conn()
 
                 except Exception as e:
                     st.error(f"Error al procesar el archivo CSV: {e}")
