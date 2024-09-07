@@ -14,9 +14,6 @@ def preprocessing_data(data):
    data = data.merge(group_fraud_by_merch[['merchant', 'fraud_merch_pct', 'fraud_merch_rank']], on='merchant',how='left')  
    data = data.merge(group_fraud_by_city[['city', 'fraud_city_pct', 'fraud_city_rank']], on='city',how='left') 
    data = data.merge(group_fraud_by_state[['state', 'fraud_state_pct', 'fraud_state_rank']], on='state',how='left') 
-   #  data = fraud_pct_by_column(data, 'merchant', group_fraud_by_merch, 'fraud_merch_pct', 'fraud_merch_rank')
-   #  data = fraud_pct_by_column(data, 'city', group_fraud_by_city, 'fraud_city_pct', 'fraud_city_rank')
-   #  data = fraud_pct_by_column(data, 'state', group_fraud_by_state, 'fraud_state_pct', 'fraud_state_rank')
 
    # Aplicar la función de reemplazo de profesiones por sector (Para visualización) y realizar un encoded por la frecuencia (para el modelo)
    data['job_sector'] = data['job'].apply(assign_sector)

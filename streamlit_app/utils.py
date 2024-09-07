@@ -9,25 +9,6 @@ from sklearn.metrics import accuracy_score, classification_report
 import tempfile
 import io
 
-# def fraud_pct_by_column(data, column, target, fraud_pct_col_name, rank_col_name):
-#     # Agrupar por columna y obtener la cantidad de ventas y cantidad de fraudes
-#     group_fraud_by_column = data.groupby(column).agg(
-#         total_sales=(target, 'count'),
-#         fraud_sales=(target, 'sum')
-#     )
-
-#     # Calcular el porcentaje de fraude en las ventas para cada valor
-#     group_fraud_by_column[fraud_pct_col_name] = (group_fraud_by_column['fraud_sales'] / group_fraud_by_column['total_sales']) * 100
-#     group_fraud_by_column = group_fraud_by_column.reset_index()
-
-#     # Rank de los vendedores por porcentaje de fraude
-#     group_fraud_by_column[rank_col_name] = group_fraud_by_column[fraud_pct_col_name].rank(ascending=False)
-
-#     # Unirlo con el df original
-#     data = data.merge(group_fraud_by_column[[column, fraud_pct_col_name, rank_col_name]], on=column,how='left')
-
-#     return data
-
 def fraud_pct_by_column(data, column, group_fraud_by_column, fraud_pct_col_name, rank_col_name):
 
     # Calcular el porcentaje de fraude para cada valor
@@ -110,6 +91,15 @@ def datetime_split(data, datatime_col_name, day_col_name, month_col_name, year_c
     data[weekday_col_name] = data[datatime_col_name].dt.weekday
 
     return data
+
+def frauds_per_day(data, datatime_col_name):
+    # Calculas los fraudes por día para visualizarlas
+    data[datatime_col_name] = pd.to_datetime(data[datatime_col_name])
+    # Filtrar  por fraudes
+    data_frauds = data[data['is_fraud']==1][[datatime_col_name, 'is_fraud']].copy()
+    data_frauds.set_index(datatime_col_name, inplace=True)
+    frauds_per_day = data_frauds.resample('D').size().reset_index(name='total_transacciones')  
+    return frauds_per_day
 
 def dob_to_age(data, dob_col_name, age_col_name):
     # Transformar la columna dob de object a datetime

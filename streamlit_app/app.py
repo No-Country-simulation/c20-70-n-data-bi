@@ -2,12 +2,14 @@ import os
 import streamlit as st
 import pandas as pd
 from preprocessing import preprocessing_data
-from utils import catboost_model, extract_zip_to_csv, extract_zip_to_model
+from utils import catboost_model, extract_zip_to_csv, extract_zip_to_model, frauds_per_day
 import tempfile
 import joblib
 from sklearn.metrics import accuracy_score, classification_report
 import plotly.graph_objects as go
 from catboost import CatBoostClassifier
+import locale
+locale.setlocale(locale.LC_ALL,'es_ES.UTF-8')
 
 # Ajustar el ancho para toda la pantalla 
 st.set_page_config(page_title="Detección de Fraude", layout="wide")
@@ -60,15 +62,23 @@ if codigo_acceso == "1":
                     
                     # Expanders independientes
                     with st.expander("Análisis Exploratorio de los Datos"):
+                        # Motrar 5 filas del dataset cargado
                         st.subheader("Previsualización de datos")
                         st.write("Primeras 5 filas del archivo:")
-                        st.dataframe(df.head())
-                        st.subheader("Top 5 Vendedores/Ciudades/Estados con mas porcentaje de fraudes")
+                        st.dataframe(df.head().style.hide(axis="index"))
+                        # Mostrar la cantidad de transacciones
+                        st.write(f"Un total de {df.shape[0]} transacciones.")
 
+                        st.subheader("Top 5 de Porcentajes de Fraude mas Altos")
                         # Carga de datasets de con los top en fraude
                         top_5_fraud_merch = pd.read_csv('streamlit_app/top_5_fraud_merch.csv')
                         top_5_fraud_city = pd.read_csv('streamlit_app/top_5_fraud_city.csv')
                         top_5_fraud_state = pd.read_csv('streamlit_app/top_5_fraud_state.csv')
+
+                        # Renombrar columnas
+                        top_5_fraud_merch.columns = ['Vendedor', 'Fraude [%]', 'Fraudes [#]']
+                        top_5_fraud_city.columns = ['Ciudad', 'Fraude [%]', 'Fraudes [#]']
+                        top_5_fraud_state.columns = ['Estado', 'Fraude [%]', 'Fraudes [#]']
 
                         # Crear tres columnas para cada top
                         col_top_merch, col_top_city, col_top_state = st.columns(3)
@@ -76,15 +86,51 @@ if codigo_acceso == "1":
                         # Mostrar dataframes en cada columna
                         with col_top_merch:
                             st.subheader("Vendedores")
-                            st.dataframe(top_5_fraud_merch)
+                            st.dataframe(top_5_fraud_merch.set_index(top_5_fraud_merch.columns[0]))
 
                         with col_top_city:
                             st.subheader("Ciudades")
-                            st.dataframe(top_5_fraud_city)
+                            st.dataframe(top_5_fraud_city.set_index(top_5_fraud_city.columns[0]))
 
                         with col_top_state:
                             st.subheader("Estados")
-                            st.dataframe(top_5_fraud_state)
+                            st.dataframe(top_5_fraud_state.set_index(top_5_fraud_state.columns[0]))
+                        
+                        # Calcular los fraudes por día
+                        df_frauds_per_day = frauds_per_day(df, 'trans_date_trans_time')
+
+                        df_frauds_per_day['trans_date_trans_time'] = pd.to_datetime(df_frauds_per_day['trans_date_trans_time'])
+                        df_frauds_per_day.set_index('trans_date_trans_time', inplace=True)
+
+                        # Convertir las fechas a formato español
+                        df_frauds_per_day.index = df_frauds_per_day.index.strftime('%d %B %Y')  # Ejemplo: 01 abril 2019
+                        # Crear una figura de Plotly para la gráfica de línea
+                        fig = go.Figure()
+
+                        # Añadir una línea con las fechas y el número de fraudes
+                        fig.add_trace(go.Scatter(
+                            x=df_frauds_per_day.index, 
+                            y=df_frauds_per_day['total_transacciones'], 
+                            mode='lines', 
+                            name='Número de Fraudes'
+                        ))
+
+                        # Añadir título y etiquetas a los ejes
+                        fig.update_layout(
+                            title="Número de Fraudes por Día",
+                            xaxis_title="Fecha",
+                            yaxis_title="Número de Fraudes",
+                            template="plotly_white"
+                        )
+
+                        # Configurar el formato de fechas en el eje x
+                        fig.update_xaxes(
+                            tickformat="%d-%b-%Y",  # Formato en día-mes-año (ej. 01-Sep-2022)
+                            ticklabelmode="period"   # Muestra las etiquetas de las fechas en modo período
+                        )
+
+                        # Mostrar la gráfica en Streamlit
+                        st.plotly_chart(fig)
 
                     with st.expander("Procesamiento de datos e ingeniería de características"):
                         st.write("Procesando los datos y creando nuevas características...")
@@ -102,7 +148,7 @@ if codigo_acceso == "1":
                         features_scaled = features.copy()
                         features_scaled[cols_to_scale] = scaler.transform(features[cols_to_scale])
                         features_scaled = pd.DataFrame(features_scaled, columns=features.columns)
-                        st.dataframe(features_scaled.head())
+                        st.dataframe(features_scaled.head().style.hide(axis="index"))
 
                     with st.expander("Predicciones de fraude con Catboost"):
                         st.write("Aplicando el modelo Catboost para predecir fraudes...")
