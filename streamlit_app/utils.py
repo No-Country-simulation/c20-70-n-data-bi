@@ -195,9 +195,4 @@ def db_conn():
     # Crear la URL de conexión con las variables de entorno
     engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
 
-    # Probar la conexión
-    try:
-        with engine.connect() as connection:
-            st.success("Conexión exitosa a PostgreSQL")
-    except Exception as e:
-        st.warning(f"Error conectando a la base de datos: {e}")
+    return engine

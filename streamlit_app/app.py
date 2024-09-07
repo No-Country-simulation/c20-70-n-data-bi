@@ -192,30 +192,46 @@ if codigo_acceso == "1":
                         st.dataframe(predictions_df)
 
                     with st.expander("Carga a la base de datos PostgreSQL"): 
-                        db_conn()
+                        # Cargar la conexión a la DB
+                        engine = db_conn()
 
+                        st.subheader("Creación de tablas relacionales")
                         # Crear la tabla users
-                        users = df[['cc_num', 'zip', 'first', 'last', 'gender', 'street', 'city', 'state', 'job', 'dob']]
+                        users = df[['cc_num', 'zip', 'first', 'last', 'gender', 'street', 'city', 'state', 'job', 'dob']].drop_duplicates()
                         # Mostrar las primeras 5 filas
+                        st.write("Tabla: Usuarios [primeras 5 filas]")
                         st.dataframe(users.head())
+                        # Cargar la tabla a la DB
+                        users.to_sql('users', engine, if_exists='replace', index=False)
 
                         # Crear la tabla locations
-                        locations = df[['city', 'state', 'city_pop']]
+                        locations = df[['city', 'state', 'city_pop']].drop_duplicates()
                         # Mostrar las primeras 5 filas
+                        st.write("Tabla: Ubicaciones [primeras 5 filas]")
                         st.dataframe(locations.head())
+                        # Cargar la tabla a la DB
+                        locations.to_sql('locations', engine, if_exists='replace', index=False)
 
                         # Crear la tabla merchants
-                        merchants = df[['merchant', 'merch_lat', 'merch_long']]
+                        merchants = df[['merchant', 'merch_lat', 'merch_long']].drop_duplicates()
                         # Mostrar las primeras 5 filas
+                        st.write("Tabla: Vendedores [primeras 5 filas]")
                         st.dataframe(merchants.head())
+                        # Cargar la tabla a la DB
+                        merchants.to_sql('merchants', engine, if_exists='replace', index=False)
 
                         # Crear la tabla transactions
-                        transactions = df[['trans_date_trans_time', 'cc_num', 'merchant', 'category', 'amt', 'lat', 'long', 'trans_num', 'unix_time']]
+                        transactions = df[['trans_date_trans_time', 'cc_num', 'merchant', 'category', 'amt', 'lat', 'long', 'trans_num', 'unix_time']].drop_duplicates()
                         # Mostrar las primeras 5 filas
-                        st.dataframe(transactions.head())
+                        st.write("Tabla: Transacciones [primeras 5 filas]")
+                        st.dataframe(transactions.head())                        
+                        # Cargar la tabla a la DB
+                        transactions.to_sql('transactions', engine, if_exists='replace', index=False)
 
                         # Mostrar las primeras 5 filas de predictions
                         st.dataframe(predictions_df.head())
+                        # Cargar la tabla a la DB
+                        predictions_df.to_sql('predictions', engine, if_exists='replace')
 
                 except Exception as e:
                     st.error(f"Error al procesar el archivo CSV: {e}")
