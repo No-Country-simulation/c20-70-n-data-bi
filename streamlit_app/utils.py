@@ -8,7 +8,6 @@ import streamlit as st
 from sklearn.metrics import accuracy_score, classification_report
 import tempfile
 from sqlalchemy import create_engine
-from dotenv import load_dotenv
 
 def fraud_pct_by_column(data, column, group_fraud_by_column, fraud_pct_col_name, rank_col_name):
 
@@ -185,8 +184,6 @@ def extract_zip_to_model(zip_file, name_model):
         return None
     
 def db_conn():
-    # Cargar variables de entorno desde el archivo .env (si estás trabajando en local)
-    load_dotenv()
 
     # Obtener las variables de entorno
     db_user = os.getenv('DB_USER')
@@ -194,12 +191,6 @@ def db_conn():
     db_host = os.getenv('DB_HOST')
     db_port = os.getenv('DB_PORT')
     db_name = os.getenv('DB_NAME')
-
-    print(db_user)
-    print(db_password)
-    print(db_host)
-    print(db_port)
-    print(db_name)
     
     # Crear la URL de conexión con las variables de entorno
     engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
