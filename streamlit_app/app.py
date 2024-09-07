@@ -131,13 +131,13 @@ if codigo_acceso == "1":
                         st.plotly_chart(fig)
 
                     with st.expander("Procesamiento de datos e ingeniería de características"):
-                        st.write("Procesando los datos y creando nuevas características...")
+                        st.subheader("Transformación de datos para el modelo")
+                        st.write("Espere mientras se procesan los datos y se crean nuevas características...")
                         data_clean = preprocessing_data(df)
                         features = data_clean.drop("is_fraud", axis=1)
                         target = data_clean["is_fraud"]
                         
                         # Escalar las características
-                        st.write("Escalando los datos...")
                         cols_to_scale = ['amt', 'zip', 'city_pop', 'fraud_merch_pct', 'fraud_merch_rank', 
                                          'fraud_city_pct', 'fraud_city_rank', 'fraud_state_pct', 'fraud_state_rank',
                                          'job_encoded', 'trans_day', 'trans_month', 'trans_year', 'trans_hour', 
@@ -149,15 +149,15 @@ if codigo_acceso == "1":
                         st.dataframe(features_scaled.head().style.hide(axis="index"))
 
                     with st.expander("Predicciones de fraude con Catboost"):
-                        st.write("Aplicando el modelo Catboost para predecir fraudes...")
+                        st.write("Aplicando el modelo de Machine Learning...")
                         model = CatBoostClassifier()
                         model.load_model('streamlit_app/catboost_bestmodel.cbm')
-                        st.write("Modelo cargado.")
                         
                         predictions, accuracy, report = catboost_model(features_scaled, target, model)
-
-                        st.write(f"Exactitud: {accuracy:.2f}")
-                        st.write("Informe de clasificación:")
+                        st.subheader("Métricas del modelo")
+                        st.write(f"Precisión: {accuracy:.2f}")
+                        st.write("Reporte de Clasificación")
+                        st.dataframe(report)
                         st.text(report)
 
                         # Calcular las transacciones seguras vs fraudes

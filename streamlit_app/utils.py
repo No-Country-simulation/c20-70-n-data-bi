@@ -156,8 +156,10 @@ def catboost_model(features_scaled, target, model):
 
     # Evaluar el modelo
     accuracy = accuracy_score(target, predictions)
-    report = classification_report(target, predictions)
-    return predictions, accuracy, report
+    report = classification_report(target, predictions, output_dict=True)
+    # Convertir el reporte de clasificación en un DataFrame
+    report_df = pd.DataFrame(report).transpose()
+    return predictions, accuracy, report_df
 
 def extract_zip_to_model(zip_file, name_model):
     try:
