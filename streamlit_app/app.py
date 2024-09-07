@@ -2,10 +2,9 @@ import os
 import streamlit as st
 import pandas as pd
 from preprocessing import preprocessing_data
-from utils import catboost_model, extract_zip_to_csv, extract_zip_to_model, frauds_per_day
+from utils import catboost_model, extract_zip_to_csv, frauds_per_day
 import tempfile
 import joblib
-from sklearn.metrics import accuracy_score, classification_report
 import plotly.graph_objects as go
 from catboost import CatBoostClassifier
 
@@ -95,6 +94,7 @@ if codigo_acceso == "1":
                             st.dataframe(top_5_fraud_state.set_index(top_5_fraud_state.columns[0]))
                         
                         # Calcular los fraudes por día
+                        st.subheader("Tendencia de Fraude")
                         df_frauds_per_day = frauds_per_day(df, 'trans_date_trans_time')
 
                         df_frauds_per_day['trans_date_trans_time'] = pd.to_datetime(df_frauds_per_day['trans_date_trans_time'])

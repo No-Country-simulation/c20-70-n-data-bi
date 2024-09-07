@@ -7,7 +7,6 @@ from catboost import CatBoostClassifier
 import streamlit as st
 from sklearn.metrics import accuracy_score, classification_report
 import tempfile
-import io
 
 def fraud_pct_by_column(data, column, group_fraud_by_column, fraud_pct_col_name, rank_col_name):
 
