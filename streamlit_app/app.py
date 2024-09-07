@@ -12,6 +12,10 @@ from catboost import CatBoostClassifier
 # Ajustar el ancho para toda la pantalla 
 st.set_page_config(page_title="Detección de Fraude", layout="wide")
 
+# Mostrar la imagen
+image_path = "./streamlit_app/logo.png"
+st.sidebar.image(image_path, use_column_width='auto')
+
 st.title("Detección de Fraude en Transacciones con Tarjetas de Crédito")
 
 # Descripción del proyecto en la barra lateral
