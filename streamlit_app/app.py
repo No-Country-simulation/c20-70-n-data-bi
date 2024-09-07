@@ -8,8 +8,6 @@ import joblib
 from sklearn.metrics import accuracy_score, classification_report
 import plotly.graph_objects as go
 from catboost import CatBoostClassifier
-import locale
-locale.setlocale(locale.LC_ALL,'es_ES.UTF-8')
 
 # Ajustar el ancho para toda la pantalla 
 st.set_page_config(page_title="Detección de Fraude", layout="wide")
