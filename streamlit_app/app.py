@@ -200,17 +200,17 @@ if codigo_acceso == "1":
                         st.dataframe(users.head())
 
                         # Crear la tabla locations
-                        locations = df['city', 'state', 'city_pop']
+                        locations = df[['city', 'state', 'city_pop']]
                         # Mostrar las primeras 5 filas
                         st.dataframe(locations.head())
 
                         # Crear la tabla merchants
-                        merchants = df['merchant', 'merch_lat', 'merch_long']
+                        merchants = df[['merchant', 'merch_lat', 'merch_long']]
                         # Mostrar las primeras 5 filas
                         st.dataframe(merchants.head())
 
                         # Crear la tabla transactions
-                        transactions = df['trans_date_trans_time', 'cc_num', 'merchant', 'category', 'amt', 'lat', 'long', 'trans_num', 'unix_time']
+                        transactions = df[['trans_date_trans_time', 'cc_num', 'merchant', 'category', 'amt', 'lat', 'long', 'trans_num', 'unix_time']]
                         # Mostrar las primeras 5 filas
                         st.dataframe(transactions.head())
 
