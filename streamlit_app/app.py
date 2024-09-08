@@ -95,7 +95,7 @@ if codigo_acceso == "1":
                         
                         # Calcular los fraudes por día
                         st.subheader("Tendencia de Fraude")
-                        df_frauds_per_day = frauds_per_day(df, 'trans_date_trans_time')
+                        df_frauds_per_day = frauds_per_day(df)
 
                         df_frauds_per_day['trans_date_trans_time'] = pd.to_datetime(df_frauds_per_day['trans_date_trans_time'])
                         df_frauds_per_day.set_index('trans_date_trans_time', inplace=True)
@@ -232,7 +232,7 @@ if codigo_acceso == "1":
                         st.dataframe(predictions_df.head())
                         # Cargar la tabla a la DB
                         predictions_df.to_sql('predictions', engine, if_exists='replace')
-                        st.success("Las tablan han sido cargados en la Base de datos.")
+                        st.success("Las tablas han sido cargadas en la Base de datos.")
                 except Exception as e:
                     st.error(f"Error al procesar el archivo CSV: {e}")
             else:

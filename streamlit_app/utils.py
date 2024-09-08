@@ -6,7 +6,68 @@ import zipfile
 # Librearias de 3ros
 from sklearn.metrics import accuracy_score, classification_report
 from sqlalchemy import create_engine
+import joblib
 import pandas as pd
+
+def calc_pct_n_rank(
+    data: pd.DataFrame,
+    group_merch_path: str = 'streamlit_app/group_fraud_by_merch.csv',
+    group_city_path: str = 'streamlit_app/group_fraud_by_city.csv',
+    group_state_path: str = 'streamlit_app/group_fraud_by_state.csv',
+    merch_col_name: str = 'merch',
+    city_col_name: str = 'city',
+    state_col_name: str = 'state',
+    fraud_merch_pct_name: str = 'fraud_merch_pct',
+    fraud_city_pct_name: str = 'fraud_city_pct',
+    fraud_state_pct_name: str = 'fraud_state_pct',
+    fraud_merch_rank_name: str = 'fraud_merch_rank',
+    fraud_city_rank_name: str = 'fraud_city_rank',
+    fraud_state_rank_name: str = 'fraud_state_rank'
+) -> pd.DataFrame:
+    """
+    Calcula el porcentaje de fraude y el ranking para diferentes grupos (merch, ciudad, estado) y los añade al DataFrame original.
+
+    Parámetros:
+    - data: DataFrame principal al que se le añadirán las columnas de porcentaje de fraude y ranking.
+    - group_merch_path: Ruta al archivo CSV que contiene los datos de fraude por vendedor.
+    - group_city_path: Ruta al archivo CSV que contiene los datos de fraude por ciudad.
+    - group_state_path: Ruta al archivo CSV que contiene los datos de fraude por estado.
+    - merch_col_name: Nombre de la columna que identifica a los vendedores en los datos de fraude.
+    - city_col_name: Nombre de la columna que identifica las ciudades en los datos de fraude.
+    - state_col_name: Nombre de la columna que identifica los estados en los datos de fraude.
+    - fraud_merch_pct_name: Nombre de la columna que se le asigna al porcentaje de fraude por vendedor.
+    - fraud_city_pct_name: Nombre de la columna que se le asigna al porcentaje de fraude por ciudad.
+    - fraud_state_pct_name: Nombre de la columna que se le asigna al porcentaje de fraude por estado.
+    - fraud_merch_rank_name: Nombre de la columna que se le asigna al ranking de fraude por vendedor.
+    - fraud_city_rank_name: Nombre de la columna que se le asigna al ranking de fraude por ciudad.
+    - fraud_state_rank_name: Nombre de la columna que se le asigna al ranking de fraude por estado.
+
+    Retorna:
+    - DataFrame con las nuevas columnas de porcentaje de fraude y ranking añadidas.
+    """
+    # Cargar los datos de fraude desde los archivos CSV
+    group_fraud_by_merch = pd.read_csv(group_merch_path)
+    group_fraud_by_city = pd.read_csv(group_city_path)
+    group_fraud_by_state = pd.read_csv(group_state_path)
+
+    # Añadir columnas de porcentaje de fraude y ranking para: vendedor, ciudad y estado
+    data = data.merge(
+        group_fraud_by_merch[[merch_col_name, fraud_merch_pct_name, fraud_merch_rank_name]], 
+        on=merch_col_name, 
+        how='left'
+    )
+    data = data.merge(
+        group_fraud_by_city[[city_col_name, fraud_city_pct_name, fraud_city_rank_name]], 
+        on=city_col_name, 
+        how='left'
+    )
+    data = data.merge(
+        group_fraud_by_state[[state_col_name, fraud_state_pct_name, fraud_state_rank_name]], 
+        on=state_col_name, 
+        how='left'
+    )
+
+    return data
 
 def catboost_model(
     features_scaled: pd.DataFrame, 
@@ -244,3 +305,61 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     distance = R * c
 
     return distance
+
+def job_encoder(data: pd.DataFrame, job_freq_path: str = 'streamlit_app/job_freq.csv') -> pd.DataFrame:
+    """
+    Codifica la columna de trabajos en el DataFrame original utilizando la frecuencia de profesiones de un archivo CSV.
+
+    Parámetros:
+    - data: DataFrame principal al que se le añadirá la columna codificada de trabajos.
+    - job_freq_path: Ruta al archivo CSV que contiene la frecuencia de las profesiones y sus proporciones.
+
+    Retorna:
+    - DataFrame con una nueva columna 'job_encoded' basada en la proporción de cada trabajo.
+    """
+    # Cargar el DataFrame con la frecuencia de las profesiones
+    job_freq = pd.read_csv(job_freq_path)
+
+    # Unir el DataFrame de frecuencias con el DataFrame original
+    data = data.merge(job_freq, on='job', how='left')
+
+    # Renombrar la columna 'proportion' a 'job_encoded'
+    data.rename(columns={'proportion': 'job_encoded'}, inplace=True)
+
+    return data
+
+def ohe_data(data, ohe_path='streamlit_app/onehotencoder.pkl', cols_to_transform=['category', 'gender']):
+    # One Hot Encoding para las categorias sin orden 
+    encoder = joblib.load(ohe_path) # Cargar el codificador desde el archivo
+    data_ohe = encoder.transform(data[cols_to_transform])
+    return data_ohe
+
+def ohe_data(
+    data: pd.DataFrame,
+    ohe_path: str = 'streamlit_app/onehotencoder.pkl',
+    cols_to_transform: list[str] = ['category', 'gender']
+) -> pd.DataFrame:
+    """
+    Aplica One Hot Encoding a las columnas especificadas de un DataFrame utilizando un codificador previamente entrenado.
+
+    Parámetros:
+    - data: DataFrame que contiene las columnas que se desean transformar.
+    - ohe_path: Ruta al archivo que contiene el codificador One Hot Encoder entrenado.
+    - cols_to_transform: Lista de nombres de columnas a las que se aplicará el One Hot Encoding.
+
+    Retorna:
+    - DataFrame con las columnas transformadas mediante One Hot Encoding.
+    """
+    # Cargar el codificador One Hot Encoder desde el archivo
+    encoder = joblib.load(ohe_path)
+    
+    # Aplicar One Hot Encoding a las columnas especificadas
+    data_ohe = encoder.transform(data[cols_to_transform])
+    
+    # Convertir el resultado a un DataFrame
+    data_ohe_df = pd.DataFrame(data_ohe, columns=encoder.get_feature_names_out(cols_to_transform))
+    
+    # Unir los datos transformados con el DataFrame original
+    data = data.drop(columns=cols_to_transform).join(data_ohe_df)
+    
+    return data
