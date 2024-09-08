@@ -227,37 +227,77 @@ def dob_to_age(
 
     return data
 
-def extract_zip_to_csv(uploaded_file, temp_dir: str) -> list:
+# def extract_zip_to_csv(uploaded_file, temp_dir: str) -> list:
+#     """
+#     Extrae un archivo ZIP subido, busca archivos CSV dentro y devuelve una lista de sus nombres.
+
+#     Parámetros:
+#     - uploaded_file: El archivo ZIP subido (por ejemplo, a través de una interfaz web).
+#     - temp_dir: Directorio temporal donde se guardará y extraerá el contenido del archivo ZIP.
+
+#     Retorna:
+#     - Una lista con los nombres de los archivos CSV extraídos.
+
+#     Comportamiento:
+#     1. Guarda el archivo ZIP en el directorio temporal.
+#     2. Descomprime el archivo ZIP en el mismo directorio.
+#     3. Busca y retorna todos los archivos con extensión .csv encontrados.
+#     """
+#     # Definir la ruta temporal donde se guardará el archivo zip
+#     zip_path = os.path.join(temp_dir, "temp.zip")
+
+#     # Guardar el archivo zip subido en el directorio temporal
+#     with open(zip_path, "wb") as f:
+#         f.write(uploaded_file.getvalue())
+
+#     # Descomprimir el archivo zip
+#     with zipfile.ZipFile(zip_path, "r") as zip_ref:
+#         zip_ref.extractall(temp_dir)
+
+#     # Buscar todos los archivos CSV extraídos
+#     extracted_files = [f for f in os.listdir(temp_dir) if f.endswith('.csv')]
+
+#     return extracted_files
+
+def extract_zip_to_csv(uploaded_file, dest_dir: str = None) -> list:
     """
-    Extrae un archivo ZIP subido, busca archivos CSV dentro y devuelve una lista de sus nombres.
+    Extrae un archivo ZIP subido, busca archivos CSV dentro y los guarda en una carpeta de destino.
 
     Parámetros:
     - uploaded_file: El archivo ZIP subido (por ejemplo, a través de una interfaz web).
-    - temp_dir: Directorio temporal donde se guardará y extraerá el contenido del archivo ZIP.
+    - dest_dir: Directorio donde se guardará y extraerá el contenido del archivo ZIP. Si es None, se utiliza el directorio actual.
 
     Retorna:
     - Una lista con los nombres de los archivos CSV extraídos.
 
     Comportamiento:
-    1. Guarda el archivo ZIP en el directorio temporal.
+    1. Guarda el archivo ZIP en el directorio de destino.
     2. Descomprime el archivo ZIP en el mismo directorio.
     3. Busca y retorna todos los archivos con extensión .csv encontrados.
     """
-    # Definir la ruta temporal donde se guardará el archivo zip
-    zip_path = os.path.join(temp_dir, "temp.zip")
+    # Si no se especifica dest_dir, utilizar el directorio actual
+    if dest_dir is None:
+        dest_dir = os.getcwd()
 
-    # Guardar el archivo zip subido en el directorio temporal
+    # Definir la ruta donde se guardará el archivo zip
+    zip_path = os.path.join(dest_dir, "uploaded.zip")
+
+    # Guardar el archivo zip subido en el directorio de destino
     with open(zip_path, "wb") as f:
         f.write(uploaded_file.getvalue())
 
     # Descomprimir el archivo zip
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        zip_ref.extractall(temp_dir)
+        zip_ref.extractall(dest_dir)
 
     # Buscar todos los archivos CSV extraídos
-    extracted_files = [f for f in os.listdir(temp_dir) if f.endswith('.csv')]
+    extracted_files = [os.path.join(dest_dir, f) for f in os.listdir(dest_dir) if f.endswith('.csv')]
+
+    # Eliminar el archivo zip si ya no es necesario
+    os.remove(zip_path)
 
     return extracted_files
+
 
 def frauds_per_day(
     data: pd.DataFrame, 
