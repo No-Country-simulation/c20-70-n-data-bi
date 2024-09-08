@@ -6,7 +6,6 @@ import os
 import zipfile
 # Librearias de 3ros
 from sklearn.metrics import accuracy_score, classification_report
-from sqlalchemy import create_engine
 import joblib
 import pandas as pd
 import streamlit as st
@@ -166,39 +165,6 @@ def datetime_split(
 
     return data
 
-def db_conn() -> object:
-    """
-    Crea y retorna una conexión a una base de datos PostgreSQL utilizando las credenciales almacenadas en las variables de entorno.
-
-    Retorna:
-    - engine: Un objeto de SQLAlchemy Engine que representa la conexión a la base de datos.
-
-    Comportamiento:
-    1. Obtiene las variables de entorno necesarias para la conexión a la base de datos.
-    2. Construye una URL de conexión usando estas variables.
-    3. Crea y retorna un objeto de SQLAlchemy Engine para conectar con la base de datos PostgreSQL.
-    """
-    # Obtener las variables de entorno
-    db_user = os.getenv('DB_USER')
-    db_password = os.getenv('DB_PASSWORD')
-    db_host = os.getenv('DB_HOST')
-    db_port = os.getenv('DB_PORT')
-    db_name = os.getenv('DB_NAME')
-    
-    # Verificar que todas las variables de entorno están presentes
-    if not all([db_user, db_password, db_host, db_port, db_name]):
-        raise ValueError("Faltan variables de entorno necesarias para la conexión a la base de datos.")
-    
-    # Crear la URL de conexión
-    connection_url = (
-        f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
-    )
-
-    # Crear y retornar el engine de SQLAlchemy
-    engine = create_engine(connection_url)
-
-    return engine
-
 def dob_to_age(
     data: pd.DataFrame, 
     dob_col_name: str = 'dob', 
@@ -226,38 +192,6 @@ def dob_to_age(
     data[age_col_name] = ((actual_date - data[dob_col_name]).dt.days / 365.25).astype('int')
 
     return data
-
-# def extract_zip_to_csv(uploaded_file, temp_dir: str) -> list:
-#     """
-#     Extrae un archivo ZIP subido, busca archivos CSV dentro y devuelve una lista de sus nombres.
-
-#     Parámetros:
-#     - uploaded_file: El archivo ZIP subido (por ejemplo, a través de una interfaz web).
-#     - temp_dir: Directorio temporal donde se guardará y extraerá el contenido del archivo ZIP.
-
-#     Retorna:
-#     - Una lista con los nombres de los archivos CSV extraídos.
-
-#     Comportamiento:
-#     1. Guarda el archivo ZIP en el directorio temporal.
-#     2. Descomprime el archivo ZIP en el mismo directorio.
-#     3. Busca y retorna todos los archivos con extensión .csv encontrados.
-#     """
-#     # Definir la ruta temporal donde se guardará el archivo zip
-#     zip_path = os.path.join(temp_dir, "temp.zip")
-
-#     # Guardar el archivo zip subido en el directorio temporal
-#     with open(zip_path, "wb") as f:
-#         f.write(uploaded_file.getvalue())
-
-#     # Descomprimir el archivo zip
-#     with zipfile.ZipFile(zip_path, "r") as zip_ref:
-#         zip_ref.extractall(temp_dir)
-
-#     # Buscar todos los archivos CSV extraídos
-#     extracted_files = [f for f in os.listdir(temp_dir) if f.endswith('.csv')]
-
-#     return extracted_files
 
 def extract_zip_to_csv(uploaded_file, dest_dir: str = None) -> list:
     """

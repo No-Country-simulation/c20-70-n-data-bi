@@ -1,12 +1,17 @@
+# Importaciones estándar
 import os
-import streamlit as st
-import pandas as pd
-from preprocessing import preprocessing_data
-from utils import db_conn, catboost_model, config_sidebar, extract_zip_to_csv, frauds_per_day, load_data_from_zip
-import tempfile
-import joblib
-import plotly.graph_objects as go
+
+# Importaciones de terceros
 from catboost import CatBoostClassifier
+import joblib
+import pandas as pd
+import plotly.graph_objects as go
+import streamlit as st
+
+# Importaciones locales
+from preprocessing import preprocessing_data
+from sql_utils import append_new_data_to_db, db_conn
+from utils import catboost_model, config_sidebar, extract_zip_to_csv, frauds_per_day, load_data_from_zip
 
 # Ajustar el ancho para toda la pantalla 
 st.set_page_config(page_title="Detección de Fraude", layout="wide")
@@ -210,13 +215,14 @@ if codigo_acceso == "1":
                     engine = db_conn()
 
                     st.subheader("Creación de tablas relacionales")
+                    
                     # Crear la tabla users
                     users = df[['cc_num', 'zip', 'first', 'last', 'gender', 'street', 'city', 'state', 'job', 'dob']].drop_duplicates()
                     # Mostrar las primeras 5 filas
                     st.write("Tabla: Usuarios [primeras 5 filas]")
                     st.dataframe(users.head())
                     # Cargar la tabla a la DB
-                    users.to_sql('users', engine, if_exists='replace', index=False)
+                    append_new_data_to_db(['cc_num'], 'users', users, engine)
 
                     # Crear la tabla locations
                     locations = df[['city', 'state', 'city_pop']].drop_duplicates()
@@ -224,7 +230,7 @@ if codigo_acceso == "1":
                     st.write("Tabla: Ubicaciones [primeras 5 filas]")
                     st.dataframe(locations.head())
                     # Cargar la tabla a la DB
-                    locations.to_sql('locations', engine, if_exists='replace', index=False)
+                    append_new_data_to_db(['city', 'state'], 'locations', locations, engine)
 
                     # Crear la tabla merchants
                     merchants = df[['merchant', 'merch_lat', 'merch_long']].drop_duplicates()
@@ -232,7 +238,7 @@ if codigo_acceso == "1":
                     st.write("Tabla: Vendedores [primeras 5 filas]")
                     st.dataframe(merchants.head())
                     # Cargar la tabla a la DB
-                    merchants.to_sql('merchants', engine, if_exists='replace', index=False)
+                    append_new_data_to_db(['merchant'], 'merchants', merchants, engine)
 
                     # Crear la tabla transactions
                     transactions = df[['trans_date_trans_time', 'cc_num', 'merchant', 'category', 'amt', 'lat', 'long', 'trans_num', 'unix_time']].drop_duplicates()
@@ -240,15 +246,21 @@ if codigo_acceso == "1":
                     st.write("Tabla: Transacciones [primeras 5 filas]")
                     st.dataframe(transactions.head())                        
                     # Cargar la tabla a la DB
-                    transactions.to_sql('transactions', engine, if_exists='replace', index=False)
+                    append_new_data_to_db(['trans_num'], 'transactions', transactions, engine)
 
                     # Mostrar las primeras 5 filas de predictions
+                    st.write("Tabla: Predicciones [primeras 5 filas]")
                     st.dataframe(predictions_df.head())
                     # Cargar la tabla a la DB
+                    append_new_data_to_db(['trans_num'], 'predictions', predictions_df, engine)
                     predictions_df.to_sql('predictions', engine, if_exists='replace')
+
+                    # Mensaje de éxito
                     st.success("Las tablas han sido cargadas en la Base de datos.")
+
             except Exception as e:
                 st.error(f"Error al procesar el archivo CSV: {e}")
+
         else:
             st.error("El archivo .zip no contiene un archivo CSV válido o contiene múltiples archivos.")
                 
