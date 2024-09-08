@@ -1,6 +1,7 @@
 # Librerias estandar
 from datetime import datetime
 from math import radians, sin, cos, sqrt, atan2
+from typing import List
 import os
 import zipfile
 # Librearias de 3ros
@@ -187,23 +188,15 @@ def dob_to_age(
     Retorna:
     - DataFrame con una nueva columna que contiene las edades en años.
     """
-
-    # Verificar que la columna dob_col_name existe
-    if dob_col_name not in data.columns:
-        raise ValueError(f"La columna '{dob_col_name}' no existe en el DataFrame.")
     
     # Transformar la columna de fechas de nacimiento a tipo datetime, ignorando valores inválidos
     data[dob_col_name] = pd.to_datetime(data[dob_col_name], errors='coerce')
-
-    # Manejar valores nulos (opcional: puedes decidir eliminarlos o rellenarlos)
-    if data[dob_col_name].isnull().any():
-        print(f"Advertencia: Se encontraron valores nulos en '{dob_col_name}'. Serán ignorados en el cálculo.")
 
     # Obtener la fecha actual
     actual_date = pd.to_datetime(datetime.now().date())
 
     # Calcular la edad en años para los registros válidos
-    data[age_col_name] = ((actual_date - data[dob_col_name]).dt.days / 365.25).astype('Int64')  # Mantener valores nulos
+    data[age_col_name] = ((actual_date - data[dob_col_name]).dt.days / 365.25).astype('int')
 
     return data
 
@@ -337,7 +330,7 @@ def ohe_data(data, ohe_path='streamlit_app/onehotencoder.pkl', cols_to_transform
 def ohe_data(
     data: pd.DataFrame,
     ohe_path: str = 'streamlit_app/onehotencoder.pkl',
-    cols_to_transform: list[str] = ['category', 'gender']
+    cols_to_transform: List[str] = ['category', 'gender']
 ) -> pd.DataFrame:
     """
     Aplica One Hot Encoding a las columnas especificadas de un DataFrame utilizando un codificador previamente entrenado.
@@ -355,11 +348,15 @@ def ohe_data(
     
     # Aplicar One Hot Encoding a las columnas especificadas
     data_ohe = encoder.transform(data[cols_to_transform])
+
+    # Reconstruir el dataframe
+    col_names = ['category_food_dining', 'category_gas_transport',
+       'category_grocery_net', 'category_grocery_pos',
+       'category_health_fitness', 'category_home', 'category_kids_pets',
+       'category_misc_net', 'category_misc_pos', 'category_personal_care',
+       'category_shopping_net', 'category_shopping_pos', 'category_travel',
+       'gender_M']
+    data_ohe = pd.DataFrame(data_ohe, columns=col_names)
+    data_ohe = pd.concat([data, data_ohe], axis=1)
     
-    # Convertir el resultado a un DataFrame
-    data_ohe_df = pd.DataFrame(data_ohe, columns=encoder.get_feature_names_out(cols_to_transform))
-    
-    # Unir los datos transformados con el DataFrame original
-    data = data.drop(columns=cols_to_transform).join(data_ohe_df)
-    
-    return data
+    return data_ohe
