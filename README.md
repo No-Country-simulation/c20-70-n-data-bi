@@ -9,12 +9,13 @@ Laura Vasquez:
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/laura-cristina-vasquez-analistadedatos)
 [![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-lauravasquez112399@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:lauravasquez112399@gmail.com)  
 
-Tómas Bejarano: 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/tomas-bejarano-885581a8/)
-[![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-tomasbejaranogonzalez@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:tomasbejaranogonzalez@gmail.com)  
-
 ## Descripción
 Desarrollar un modelo predictivo para detectar transacciones fraudulentas en una plataforma de pagos electrónicos, utilizando técnicas de aprendizaje automático y análisis de comportamiento.
+
+# Entregables:
+- Pagina Web: El **usuario** podra cargar un .zip que contenga el archivo .csv con los datos que necesitan predicción. La pagina predice en tiempo real, carga los datos a la base de datos en PostgreSQL y devuelve feedback en forma de visualizaciones. 
+- Base de datos en PostgreSQL: El **usuario** puede realizar consultas SQL al conectarse en la base de datos. 
+- Power BI: A partir del Análisis Exploratorio de Datos se responden algunas preguntas a traves de poderosas visualizaciones. 
 
 ## Tecnolgías
 ![Python](https://img.shields.io/badge/-Python-blue?style=for-the-badge&logo=python&logoColor=white&logoWidth=40)
