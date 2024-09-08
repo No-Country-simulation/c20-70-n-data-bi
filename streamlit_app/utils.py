@@ -14,7 +14,7 @@ def calc_pct_n_rank(
     group_merch_path: str = 'streamlit_app/group_fraud_by_merch.csv',
     group_city_path: str = 'streamlit_app/group_fraud_by_city.csv',
     group_state_path: str = 'streamlit_app/group_fraud_by_state.csv',
-    merch_col_name: str = 'merch',
+    merch_col_name: str = 'merchant',
     city_col_name: str = 'city',
     state_col_name: str = 'state',
     fraud_merch_pct_name: str = 'fraud_merch_pct',
