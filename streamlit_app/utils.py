@@ -1,89 +1,74 @@
-import os
-import pandas as pd
+# Librerias estandar
 from datetime import datetime
 from math import radians, sin, cos, sqrt, atan2
+import os
 import zipfile
-from catboost import CatBoostClassifier
-import streamlit as st
+# Librearias de 3ros
 from sklearn.metrics import accuracy_score, classification_report
-import tempfile
 from sqlalchemy import create_engine
+import pandas as pd
 
-def fraud_pct_by_column(data, column, group_fraud_by_column, fraud_pct_col_name, rank_col_name):
+def catboost_model(
+    features_scaled: pd.DataFrame, 
+    target: pd.Series, 
+    model
+) -> tuple:
+    """
+    Genera predicciones utilizando un modelo CatBoost, evalúa el rendimiento del modelo y devuelve las predicciones, la precisión y un informe detallado de la clasificación.
 
-    # Calcular el porcentaje de fraude para cada valor
-    group_fraud_by_column[fraud_pct_col_name] = (group_fraud_by_column['fraud_sales'] / group_fraud_by_column['total_sales']) * 100
-    group_fraud_by_column = group_fraud_by_column.reset_index()
+    Parámetros:
+    - features_scaled: DataFrame que contiene las características escaladas para el modelo.
+    - target: Serie que contiene las etiquetas reales (verdaderas).
+    - model: Modelo entrenado de CatBoost usado para hacer predicciones.
 
-    # Rank de porcentaje de fraude
-    group_fraud_by_column[rank_col_name] = group_fraud_by_column[fraud_pct_col_name].rank(ascending=False)
+    Retorna:
+    - Una tupla con las predicciones, la precisión del modelo y un DataFrame que contiene el informe de clasificación.
 
-    # Unirlo con el df original
-    data = data.merge(group_fraud_by_column[[column, fraud_pct_col_name, rank_col_name]], on=column,how='left')
+    Comportamiento:
+    1. Realiza predicciones utilizando el modelo proporcionado.
+    2. Calcula la precisión del modelo usando las etiquetas reales.
+    3. Genera un informe detallado de clasificación, que incluye precisión, recall y F1-score para cada clase.
+    """
+    # Hacer predicciones
+    predictions = model.predict(features_scaled)
 
-    return data
+    # Evaluar el modelo
+    accuracy = accuracy_score(target, predictions)
+    report = classification_report(target, predictions, output_dict=True)
 
-# Se agruparan las profesiones para disminuir la dimensionalidad
-def assign_sector(x):
-    group_jobs = {
-        "Engineering and Technology": ["engineer", "developer", "programmer", "technician", "architect", "systems", 
-                                    "network", "administrator", "data scientist", "cybersecurity", "web developer", 
-                                    "analyst", "database", "devops", "maintenance", "manufacturing", "site", 
-                                    "structural", "materials", "biomedical", "environmental", "telecommunications"],
-        
-        "Healthcare and Medicine": ["doctor", "nurse", "therapist", "pharmacist", "health", "surgeon", "dentist", 
-                                    "clinician", "physician", "optometrist", "radiologist", "paramedic", "midwife", 
-                                    "veterinarian", "psychiatrist", "psychologist", "radiographer", "biochemist", 
-                                    "cytogeneticist", "audiologist", "pathologist"],
-        
-        "Education and Training": ["teacher", "professor", "educator", "trainer", "lecturer", "scientist", "tutor", 
-                                "principal", "instructor", "counselor", "academic", "researcher", "dean", 
-                                "headmaster", "careers adviser", "museum education officer", "education administrator"],
-        
-        "Science and Environment": ["scientist", "environmental consultant", "ecologist", "geologist", "hydrologist", 
-                                    "conservation officer", "horticulturist", "geophysicist", "soil scientist", 
-                                    "agricultural consultant", "agricultural engineer", "oceanographer", 
-                                    "fisheries officer"],
-        
-        "Art, Design, and Media": ["designer", "artist", "animator", "photographer", "film editor", "video editor", 
-                                "television producer", "film producer", "radio producer", "curator"],
-        
-        "Finance": ["analyst", "accountant", "auditor", "banker", "financial", "investment", "controller", "broker", 
-                    "consultant", "treasurer", "loan officer", "trader", "actuary", "economist", "portfolio", "credit"],
-        
-        "Marketing": ["manager", "executive", "specialist", "consultant", "advertising", "public relations", "strategist", 
-                    "director", "coordinator", "brand", "SEO", "content", "digital", "market research", "social media", 
-                    "copywriter"],
-        
-        "Manufacturing": ["operator", "mechanic", "assembler", "fabricator", "engineer", "technician", "welder", 
-                        "planner", "quality", "machinist", "production", "inspector", "supervisor", "foreman", 
-                        "toolmaker", "CNC"],
-        
-        "Retail": ["cashier", "salesperson", "store", "associate", "manager", "clerk", "shopkeeper", "merchandiser", 
-                "assistant", "retail", "customer service", "sales", "inventory", "buyer", "stocker", "checkout"],
-        
-        "Legal": ["lawyer", "attorney", "paralegal", "judge", "legal", "solicitor", "notary", "clerk", "litigator", 
-                "advocate", "barrister", "counsel", "magistrate", "prosecutor", "defense", "compliance"],
-        
-        "Hospitality": ["chef", "waiter", "bartender", "host", "manager", "receptionist", "housekeeper", "concierge", 
-                        "caterer", "cook", "hotel", "tour guide", "event planner", "sous chef", "sommelier", "valet"],
-        
-        "Construction": ["builder", "carpenter", "electrician", "plumber", "architect", "project manager", "site manager", 
-                        "surveyor", "foreman", "bricklayer", "roofer", "civil engineer", "construction", "contractor", 
-                        "inspector", "draftsman"]
-    }
-    for key in group_jobs:
-        for role in group_jobs[key]:
-            if x.find(role) != -1:
-                return key
-    return "Other"
+    # Convertir el reporte de clasificación en un DataFrame
+    report_df = pd.DataFrame(report).transpose()
 
+    return predictions, accuracy, report_df
 
-def datetime_split(data, datatime_col_name, day_col_name, month_col_name, year_col_name, hour_col_name, weekday_col_name):
-    # Transformar la columna a datetime para el procesado
+def datetime_split(
+    data: pd.DataFrame, 
+    datatime_col_name: str = 'trans_date_trans_time', 
+    day_col_name: str = 'trans_day', 
+    month_col_name: str = 'trans_month', 
+    year_col_name: str = 'trans_year', 
+    hour_col_name: str = 'trans_hour', 
+    weekday_col_name: str = 'trans_weekday'
+) -> pd.DataFrame:
+    """
+    Divide una columna de datetime en varias columnas que contienen información del día, mes, año, hora y día de la semana.
+
+    Parámetros:
+    - data: DataFrame que contiene la columna de tipo datetime.
+    - datatime_col_name: Nombre de la columna datetime a dividir. Por defecto 'trans_date_trans_time'.
+    - day_col_name: Nombre de la nueva columna que contendrá el día del mes. Por defecto 'trans_day'.
+    - month_col_name: Nombre de la nueva columna que contendrá el mes. Por defecto 'trans_month'.
+    - year_col_name: Nombre de la nueva columna que contendrá el año. Por defecto 'trans_year'.
+    - hour_col_name: Nombre de la nueva columna que contendrá la hora. Por defecto 'trans_hour'.
+    - weekday_col_name: Nombre de la nueva columna que contendrá el día de la semana (0=lunes, 6=domingo). Por defecto 'trans_weekday'.
+
+    Retorna:
+    - DataFrame con nuevas columnas que contienen el día, mes, año, hora y día de la semana.
+    """
+    # Transformar la columna a tipo datetime para el procesado
     data[datatime_col_name] = pd.to_datetime(data[datatime_col_name])
 
-    # Dividir el día del mes, mes, año, hora y día de la semana en nuevas columnas
+    # Crear nuevas columnas para día, mes, año, hora y día de la semana
     data[day_col_name] = data[datatime_col_name].dt.day
     data[month_col_name] = data[datatime_col_name].dt.month
     data[year_col_name] = data[datatime_col_name].dt.year
@@ -92,42 +77,92 @@ def datetime_split(data, datatime_col_name, day_col_name, month_col_name, year_c
 
     return data
 
-def frauds_per_day(data, datatime_col_name):
-    # Calculas los fraudes por día para visualizarlas
-    data[datatime_col_name] = pd.to_datetime(data[datatime_col_name])
-    # Filtrar  por fraudes
-    data_frauds = data[data['is_fraud']==1][[datatime_col_name, 'is_fraud']].copy()
-    data_frauds.set_index(datatime_col_name, inplace=True)
-    frauds_per_day = data_frauds.resample('D').size().reset_index(name='total_transacciones')  
-    return frauds_per_day
+def db_conn() -> object:
+    """
+    Crea y retorna una conexión a una base de datos PostgreSQL utilizando las credenciales almacenadas en las variables de entorno.
 
-def dob_to_age(data, dob_col_name, age_col_name):
-    # Transformar la columna dob de object a datetime
-    data[dob_col_name] = pd.to_datetime(data[dob_col_name])
+    Retorna:
+    - engine: Un objeto de SQLAlchemy Engine que representa la conexión a la base de datos.
+
+    Comportamiento:
+    1. Obtiene las variables de entorno necesarias para la conexión a la base de datos.
+    2. Construye una URL de conexión usando estas variables.
+    3. Crea y retorna un objeto de SQLAlchemy Engine para conectar con la base de datos PostgreSQL.
+    """
+    # Obtener las variables de entorno
+    db_user = os.getenv('DB_USER')
+    db_password = os.getenv('DB_PASSWORD')
+    db_host = os.getenv('DB_HOST')
+    db_port = os.getenv('DB_PORT')
+    db_name = os.getenv('DB_NAME')
+    
+    # Verificar que todas las variables de entorno están presentes
+    if not all([db_user, db_password, db_host, db_port, db_name]):
+        raise ValueError("Faltan variables de entorno necesarias para la conexión a la base de datos.")
+    
+    # Crear la URL de conexión
+    connection_url = (
+        f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
+    )
+
+    # Crear y retornar el engine de SQLAlchemy
+    engine = create_engine(connection_url)
+
+    return engine
+
+def dob_to_age(
+    data: pd.DataFrame, 
+    dob_col_name: str = 'dob', 
+    age_col_name: str = 'age'
+) -> pd.DataFrame:
+    """
+    Convierte una columna de fechas de nacimiento (DOB=date of birth) en una columna de edades en años.
+
+    Parámetros:
+    - data: DataFrame que contiene una columna con fechas de nacimiento.
+    - dob_col_name: Nombre de la columna que contiene las fechas de nacimiento (por defecto 'dob').
+    - age_col_name: Nombre de la nueva columna donde se almacenarán las edades calculadas (por defecto 'age').
+
+    Retorna:
+    - DataFrame con una nueva columna que contiene las edades en años.
+    """
+
+    # Verificar que la columna dob_col_name existe
+    if dob_col_name not in data.columns:
+        raise ValueError(f"La columna '{dob_col_name}' no existe en el DataFrame.")
+    
+    # Transformar la columna de fechas de nacimiento a tipo datetime, ignorando valores inválidos
+    data[dob_col_name] = pd.to_datetime(data[dob_col_name], errors='coerce')
+
+    # Manejar valores nulos (opcional: puedes decidir eliminarlos o rellenarlos)
+    if data[dob_col_name].isnull().any():
+        print(f"Advertencia: Se encontraron valores nulos en '{dob_col_name}'. Serán ignorados en el cálculo.")
 
     # Obtener la fecha actual
     actual_date = pd.to_datetime(datetime.now().date())
 
-    # Convertir la fecha de nacimiento a edad [años] (fecha actual - fecha de nacimiento)/días promedio por año
-    data[age_col_name] = ((actual_date - data[dob_col_name]).dt.days / 365.25).astype(int)
+    # Calcular la edad en años para los registros válidos
+    data[age_col_name] = ((actual_date - data[dob_col_name]).dt.days / 365.25).astype('Int64')  # Mantener valores nulos
 
     return data
 
-# Función para calcular la distancia
-def haversine_distance(lat1, lon1, lat2, lon2):
-    R = 6371  # Radio de la tierra [km]
-    lat1_rad, lon1_rad = radians(lat1), radians(lon1)
-    lat2_rad, lon2_rad = radians(lat2), radians(lon2)
-    dlat = lat2_rad - lat1_rad
-    dlon = lon2_rad - lon1_rad
-    a = sin(dlat / 2)**2 + cos(lat1_rad) * cos(lat2_rad) * sin(dlon / 2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    return R * c
+def extract_zip_to_csv(uploaded_file, temp_dir: str) -> list:
+    """
+    Extrae un archivo ZIP subido, busca archivos CSV dentro y devuelve una lista de sus nombres.
 
-def extract_zip_to_csv(uploaded_file, temp_dir):
+    Parámetros:
+    - uploaded_file: El archivo ZIP subido (por ejemplo, a través de una interfaz web).
+    - temp_dir: Directorio temporal donde se guardará y extraerá el contenido del archivo ZIP.
+
+    Retorna:
+    - Una lista con los nombres de los archivos CSV extraídos.
+
+    Comportamiento:
+    1. Guarda el archivo ZIP en el directorio temporal.
+    2. Descomprime el archivo ZIP en el mismo directorio.
+    3. Busca y retorna todos los archivos con extensión .csv encontrados.
     """
-    Extrae un archivo zip, busca un archivo CSV dentro y lo convierte a csv.
-    """
+    # Definir la ruta temporal donde se guardará el archivo zip
     zip_path = os.path.join(temp_dir, "temp.zip")
 
     # Guardar el archivo zip subido en el directorio temporal
@@ -138,61 +173,74 @@ def extract_zip_to_csv(uploaded_file, temp_dir):
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(temp_dir)
 
-    # Buscar archivos CSV en el directorio temporal
+    # Buscar todos los archivos CSV extraídos
     extracted_files = [f for f in os.listdir(temp_dir) if f.endswith('.csv')]
 
     return extracted_files
 
+def frauds_per_day(
+    data: pd.DataFrame, 
+    datatime_col_name: str = 'trans_date_trans_time',
+    fraud_col_name: str = 'is_fraud',
+    total_trans_col_name: str = 'total_transacciones'
+) -> pd.DataFrame:
+    """
+    Calcula el número de fraudes por día a partir de una columna de fechas y devuelve un DataFrame con los totales por día.
 
-def catboost_model(features_scaled, target, model):
-    predictions = model.predict(features_scaled)                   # Hacer predicciones
+    Parámetros:
+    - data: DataFrame que contiene las transacciones, incluyendo una columna con la fecha y una columna de fraude.
+    - datatime_col_name: Nombre de la columna que contiene la fecha de la transacción, en formato datetime.
+    - fraud_col_name: Nombre de la columna que contiene el flag del fraude, 0 o 1. 
+    - total_tran_col_name: Nombre de la columna que contendrá el total de transacciones. 
 
-    # Evaluar el modelo
-    accuracy = accuracy_score(target, predictions)
-    report = classification_report(target, predictions, output_dict=True)
-    # Convertir el reporte de clasificación en un DataFrame
-    report_df = pd.DataFrame(report).transpose()
-    return predictions, accuracy, report_df
 
-def extract_zip_to_model(zip_file, name_model):
-    try:
-        # Extraer el archivo .cbm dentro de un directorio temporal
-        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-            with tempfile.TemporaryDirectory() as tmpdirname:
-                # Filtrar y extraer solo el archivo de modelo necesario
-                extracted_files = []
-                for file_name in zip_ref.namelist():
-                    if file_name.endswith(name_model):
-                        zip_ref.extract(file_name, tmpdirname)
-                        extracted_file_path = os.path.join(tmpdirname, file_name)
-                        extracted_files.append(extracted_file_path)
-                        break
-                else:
-                    raise FileNotFoundError(f'{name_model} no encontrado en el archivo ZIP.')
+    Retorna:
+    - DataFrame con el total de transacciones fraudulentas por día.
+    """
+    # Asegurarse de que la columna de fechas esté en formato datetime
+    data[datatime_col_name] = pd.to_datetime(data[datatime_col_name])
 
-                # Imprimir la ruta del archivo extraído y los archivos en el directorio temporal
-                print(f"Archivo extraído en: {extracted_files[0]}")
-                print(f"Archivos en el directorio temporal: {os.listdir(tmpdirname)}")
+    # Filtrar solo las transacciones que son fraudes
+    data_frauds = data[data[fraud_col_name] == 1][[datatime_col_name, fraud_col_name]].copy()
 
-                # Cargar el modelo CatBoost
-                model = CatBoostClassifier()
-                model.load_model(extracted_files[0])
-                return model
+    # Establecer la columna de fechas como índice
+    data_frauds.set_index(datatime_col_name, inplace=True)
 
-    except Exception as e:
-        print(f"Error al extraer o cargar el modelo: {e}")
-        return None
-    
-def db_conn():
+    # Agrupar por día y contar el número de fraudes
+    frauds_per_day = data_frauds.resample('D').size().reset_index(name=total_trans_col_name)
 
-    # Obtener las variables de entorno
-    db_user = os.getenv('DB_USER')
-    db_password = os.getenv('DB_PASSWORD')
-    db_host = os.getenv('DB_HOST')
-    db_port = os.getenv('DB_PORT')
-    db_name = os.getenv('DB_NAME')
-    
-    # Crear la URL de conexión con las variables de entorno
-    engine = create_engine(f'postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}')
+    return frauds_per_day
 
-    return engine
+def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """
+    Calcula la distancia en línea recta entre dos puntos en la superficie de la Tierra,
+    utilizando la fórmula del Haversine.
+
+    Parámetros:
+    - lat1: Latitud del primer punto en grados.
+    - lon1: Longitud del primer punto en grados.
+    - lat2: Latitud del segundo punto en grados.
+    - lon2: Longitud del segundo punto en grados.
+
+    Retorna:
+    - La distancia entre los dos puntos en kilómetros.
+    """
+    # Radio de la Tierra en kilómetros
+    R = 6371.0
+
+    # Convertir grados a radianes
+    lat1_rad, lon1_rad = radians(lat1), radians(lon1)
+    lat2_rad, lon2_rad = radians(lat2), radians(lon2)
+
+    # Diferencias de coordenadas
+    dlat = lat2_rad - lat1_rad
+    dlon = lon2_rad - lon1_rad
+
+    # Fórmula del Haversine
+    a = sin(dlat / 2)**2 + cos(lat1_rad) * cos(lat2_rad) * sin(dlon / 2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    # Distancia final en kilómetros
+    distance = R * c
+
+    return distance
