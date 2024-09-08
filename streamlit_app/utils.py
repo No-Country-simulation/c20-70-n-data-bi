@@ -9,6 +9,7 @@ from sklearn.metrics import accuracy_score, classification_report
 from sqlalchemy import create_engine
 import joblib
 import pandas as pd
+import streamlit as st
 
 def calc_pct_n_rank(
     data: pd.DataFrame,
@@ -102,6 +103,32 @@ def catboost_model(
     report_df = pd.DataFrame(report).transpose()
 
     return predictions, accuracy, report_df
+
+def config_sidebar(logo_img_path: str = './streamlit_app/logo.png') -> str:
+    """
+    Configura la barra lateral de la aplicación Streamlit.
+
+    Parámetros:
+    - logo_img_path: Ruta del archivo de imagen del logo que se mostrará en la barra lateral.
+    
+    Retorna:
+    - El código de acceso ingresado por el usuario.
+    """
+    # Mostrar el logo en la barra lateral
+    st.sidebar.image(logo_img_path, use_column_width='auto')
+
+    # Descripción del proyecto en la barra lateral
+    st.sidebar.title("Descripción del Proyecto")
+    st.sidebar.write("""
+    Este proyecto tiene como objetivo realizar predicciones de fraudes en transacciones con tarjeta de crédito y llevar a cabo un Análisis Exploratorio de los Datos.
+    \n
+    Por favor, ingresa el código de acceso para continuar.
+    """)
+
+    # Solicitar el código de acceso
+    codigo_acceso = st.sidebar.text_input("Ingresa el código de acceso", type="password")
+    
+    return codigo_acceso
 
 def datetime_split(
     data: pd.DataFrame, 
@@ -320,6 +347,31 @@ def job_encoder(data: pd.DataFrame, job_freq_path: str = 'streamlit_app/job_freq
     data.rename(columns={'proportion': 'job_encoded'}, inplace=True)
 
     return data
+
+def load_data_from_zip(key: str = '1') -> tuple:
+    """
+    Carga un archivo .zip subido por el usuario y verifica si se ha subido con éxito.
+
+    Parámetros:
+    - key: Clave única para el widget de carga de archivos en Streamlit.
+
+    Retorna:
+    - success_file: Booleano que indica si el archivo fue subido con éxito.
+    - uploaded_file: El archivo .zip subido por el usuario, o None si no se subió ningún archivo.
+    """
+    # Crear el objeto de carga del archivo tipo .zip
+    uploaded_file = st.file_uploader("Sube tu archivo CSV en formato .zip", type=["zip"], key=key)
+    
+    success_file = False
+
+    # Si el archivo no está vacío, continua
+    if uploaded_file is not None:
+        st.success("Archivo subido con éxito!")
+        success_file = True
+    else:
+        st.warning("Por favor ingrese un archivo")
+
+    return success_file, uploaded_file
 
 def ohe_data(data, ohe_path='streamlit_app/onehotencoder.pkl', cols_to_transform=['category', 'gender']):
     # One Hot Encoding para las categorias sin orden 
