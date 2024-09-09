@@ -1,5 +1,6 @@
 # Importaciones estándar
 import os
+import gc
 
 # Importaciones de terceros
 from catboost import CatBoostClassifier
@@ -34,16 +35,15 @@ if codigo_acceso == "1":
     
     # Si el archivo es correcto
     if success_file:
-        # Crea una carpeta temporal para cargar los datos
-        # with tempfile.TemporaryDirectory() as temp_dir:
-        #     # Extraer el CSV en el archivo temporal
-        #     extracted_files = extract_zip_to_csv(uploaded_file, temp_dir)
 
         # Extraer el CSV en el directorio actual
         extracted_files = extract_zip_to_csv(uploaded_file)
 
-        # Eliminar el archivo .zip para ahorra memoria
-        #os.remove(uploaded_file)
+        # Eliminar la referencia del archivo de la memoria
+        #uploaded_file = None
+    
+        # Forzar la recolección de basura para liberar memoria
+        #gc.collect()
 
         # Si solo hay 1 archivo CSV
         if len(extracted_files) == 1:
@@ -252,7 +252,7 @@ if codigo_acceso == "1":
                     st.write("Tabla: Predicciones [primeras 5 filas]")
                     st.dataframe(predictions_df.head())
                     # Cargar la tabla a la DB
-                    append_new_data_to_db(['trans_num'], 'predictions', predictions_df, engine)
+                    append_new_data_to_db(['trans_num'], 'predictions', predictions_df.reset_index(), engine)
                     predictions_df.to_sql('predictions', engine, if_exists='replace')
 
                     # Mensaje de éxito
