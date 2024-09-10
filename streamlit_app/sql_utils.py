@@ -1,6 +1,6 @@
 from typing import List
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 import pandas as pd
 
 def db_conn() -> object:
@@ -53,12 +53,20 @@ def append_new_data_to_db(
         engine: Conexión al motor de la base de datos.
         index (bool, optional): Si se debe escribir el índice. Default es False.
     """
-    # Leer la tabla existente en la base de datos
-    query = f'SELECT {", ".join(keys)} FROM {table_name}'
-    existing_table = pd.read_sql(query, engine)
 
-    # Calcular los usuarios que no existen en la base de datos
-    new_users = data[~data[keys].isin(existing_table[keys])]
 
     # Añadir los nuevos usuarios a la base de datos
-    new_users.to_sql(table_name, engine, if_exists='replace', index=index)
+    #ew_users.to_sql(table_name, engine, if_exists='append', index=index)
+
+    inspector = inspect(engine)
+
+    if not inspector.has_table(table_name):
+        data.to_sql(table_name, engine, index=index)
+    else:
+        # Leer la tabla existente en la base de datos
+        query = f'SELECT {", ".join(keys)} FROM {table_name}'
+        existing_table = pd.read_sql(query, engine)
+
+        # Calcular los usuarios que no existen en la base de datos
+        new_users = data[~data[keys].isin(existing_table[keys])]
+        new_users.to_sql(table_name, engine, if_exists='append', index=index)
