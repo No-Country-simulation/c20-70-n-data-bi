@@ -1,6 +1,7 @@
 # Importaciones estándar
 import os
 import gc
+import tempfile
 
 # Importaciones de terceros
 from catboost import CatBoostClassifier
@@ -36,25 +37,38 @@ if codigo_acceso == "1":
     # Si el archivo es correcto
     if success_file:
 
-        # Extraer el CSV en el directorio actual
-        extracted_files = extract_zip_to_csv(uploaded_file)
+        # Crear un archivo temporal para extraer la data.
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Extraer el CSV en el archivo temporal
+            extracted_files = extract_zip_to_csv(uploaded_file, temp_dir)
 
-        # Eliminar la referencia del archivo de la memoria
-        #uploaded_file = None
-    
-        # Forzar la recolección de basura para liberar memoria
-        #gc.collect()
+            # Extraer la ubicación del archivo
+            csv_file_path = os.path.join(temp_dir, extracted_files[0])
+
+            # Leer en pandas
+            tmp_data = pd.read_csv(csv_file_path)
+
+            # Cargar la DB
+            engine = db_conn()
+
+            # Cargar los datos a la DB
+            tmp_data.to_sql('tmp_data', engine, if_exists='replace', index=False)
+
+        # Extraer el CSV en el directorio actual
+        #extracted_files = extract_zip_to_csv(uploaded_file)
 
         # Si solo hay 1 archivo CSV
         if len(extracted_files) == 1:
             # Obtener la ubicación del archivo
-            csv_file_path = os.path.join(os.getcwd(), extracted_files[0])
+            #csv_file_path = os.path.join(os.getcwd(), extracted_files[0])
 
             try:
                 # Sección desplegable 2: Análisis Exploratorio de los Datos
                 with st.expander("Análisis Exploratorio de los Datos"):
                     # Leer el archivo CSV
-                    df = pd.read_csv(csv_file_path)
+                    query = 'SELECT * FROM public.tmp_data'
+                    df = pd.read_sql(query, engine)
+                    #df = pd.read_csv(csv_file_path)
 
                     # Previsualización del dataset
                     st.subheader("Previsualización de datos")
