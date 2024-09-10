@@ -134,7 +134,7 @@ if codigo_acceso == "1":
 
                     # Mostrar la gráfica en Streamlit
                     st.plotly_chart(fig)
-
+                    del df_frauds_per_day
                 # Sección desplegable 3: Transformación de datos
                 with st.expander("Procesamiento de datos e ingeniería de características"):
                     st.subheader("Transformación de datos para el modelo")
