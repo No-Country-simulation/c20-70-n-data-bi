@@ -153,6 +153,9 @@ if codigo_acceso == "1":
                     features = data_clean.drop("is_fraud", axis=1)
                     target = data_clean["is_fraud"]
                     
+                    # Eliminar la data clean para ahorro de memoria
+                    del data_clean
+
                     # Escalar las características
                     cols_to_scale = ['amt', 'zip', 'city_pop', 'fraud_merch_pct', 'fraud_merch_rank', 
                                         'fraud_city_pct', 'fraud_city_rank', 'fraud_state_pct', 'fraud_state_rank',
@@ -160,6 +163,7 @@ if codigo_acceso == "1":
                                         'trans_weekday', 'age', 'distance_to_merch']
                     scaler = joblib.load("streamlit_app/scaler.pkl")                                # Cargar el escalador
                     features_scaled = features.copy()                                               # Realizar una copia de las características
+                    del features
                     features_scaled[cols_to_scale] = scaler.transform(features[cols_to_scale])      # Realizar la escala para columnas específicas
                     features_scaled = pd.DataFrame(features_scaled, columns=features.columns)       # Retransformar en dataframe
                     st.dataframe(features_scaled.head().style.hide(axis="index"))                   # Eliminar el index
@@ -176,6 +180,10 @@ if codigo_acceso == "1":
                     
                     # Aplicar el modelo de machine learning a los datos
                     predictions, accuracy, report = catboost_model(features_scaled, target, model)
+
+                    del model
+                    del features_scaled 
+                    del target 
 
                     # Eliminar el objeto temporal para el mensaje de carga
                     msg_ML_loading.empty() 
@@ -252,6 +260,8 @@ if codigo_acceso == "1":
                     st.dataframe(transactions.head())                        
                     # Cargar la tabla a la DB
                     append_new_data_to_db(['trans_num'], 'transactions', transactions, engine)
+                    
+                    del df
 
                     # Mostrar las primeras 5 filas de predictions
                     st.write("Tabla: Predicciones [primeras 5 filas]")
