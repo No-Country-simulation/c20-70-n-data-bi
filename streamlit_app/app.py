@@ -236,6 +236,7 @@ if codigo_acceso == "1":
                     st.dataframe(users.head())
                     # Cargar la tabla a la DB
                     append_new_data_to_db(['cc_num'], 'users', users, engine)
+                    del users
 
                     # Crear la tabla locations
                     locations = df[['city', 'state', 'city_pop']].drop_duplicates()
@@ -244,6 +245,7 @@ if codigo_acceso == "1":
                     st.dataframe(locations.head())
                     # Cargar la tabla a la DB
                     append_new_data_to_db(['city', 'state'], 'locations', locations, engine)
+                    del locations
 
                     # Crear la tabla merchants
                     merchants = df[['merchant', 'merch_lat', 'merch_long']].drop_duplicates()
@@ -252,6 +254,7 @@ if codigo_acceso == "1":
                     st.dataframe(merchants.head())
                     # Cargar la tabla a la DB
                     append_new_data_to_db(['merchant'], 'merchants', merchants, engine)
+                    del merchants
 
                     # Crear la tabla transactions
                     transactions = df[['trans_date_trans_time', 'cc_num', 'merchant', 'category', 'amt', 'lat', 'long', 'trans_num', 'unix_time']].drop_duplicates()
@@ -260,7 +263,7 @@ if codigo_acceso == "1":
                     st.dataframe(transactions.head())                        
                     # Cargar la tabla a la DB
                     append_new_data_to_db(['trans_num'], 'transactions', transactions, engine)
-                    
+                    del transactions
                     del df
 
                     # Mostrar las primeras 5 filas de predictions
@@ -269,7 +272,7 @@ if codigo_acceso == "1":
                     # Cargar la tabla a la DB
                     append_new_data_to_db(['trans_num'], 'predictions', predictions_df.reset_index(), engine)
                     predictions_df.to_sql('predictions', engine, if_exists='replace')
-
+                    del predictions_df
                     # Mensaje de éxito
                     st.success("Las tablas han sido cargadas en la Base de datos.")
 
