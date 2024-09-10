@@ -61,4 +61,4 @@ def append_new_data_to_db(
     new_users = data[~data[keys].isin(existing_table[keys])]
 
     # Añadir los nuevos usuarios a la base de datos
-    new_users.to_sql(table_name, engine, if_exists='append', index=index)
+    new_users.to_sql(table_name, engine, if_exists='replace', index=index)
