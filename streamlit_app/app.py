@@ -1,6 +1,5 @@
 # Importaciones estándar
 import os
-import gc
 import tempfile
 
 # Importaciones de terceros
@@ -46,13 +45,7 @@ if codigo_acceso == "1":
             csv_file_path = os.path.join(temp_dir, extracted_files[0])
 
             # Leer en pandas
-            tmp_data = pd.read_csv(csv_file_path)
-
-            # Cargar la DB
-            engine = db_conn()
-
-            # Cargar los datos a la DB
-            tmp_data.to_sql('tmp_data', engine, if_exists='replace', index=False)
+            df = pd.read_csv(csv_file_path)
 
         # Extraer el CSV en el directorio actual
         #extracted_files = extract_zip_to_csv(uploaded_file)
@@ -61,13 +54,11 @@ if codigo_acceso == "1":
         if len(extracted_files) == 1:
             # Obtener la ubicación del archivo
             #csv_file_path = os.path.join(os.getcwd(), extracted_files[0])
-
+            del uploaded_file
             try:
                 # Sección desplegable 2: Análisis Exploratorio de los Datos
                 with st.expander("Análisis Exploratorio de los Datos"):
                     # Leer el archivo CSV
-                    query = 'SELECT * FROM public.tmp_data'
-                    df = pd.read_sql(query, engine)
                     #df = pd.read_csv(csv_file_path)
 
                     # Previsualización del dataset
