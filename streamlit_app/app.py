@@ -163,9 +163,9 @@ if codigo_acceso == "1":
                                         'trans_weekday', 'age', 'distance_to_merch']
                     scaler = joblib.load("streamlit_app/scaler.pkl")                                # Cargar el escalador
                     features_scaled = features.copy()                                               # Realizar una copia de las características
-                    del features
                     features_scaled[cols_to_scale] = scaler.transform(features[cols_to_scale])      # Realizar la escala para columnas específicas
                     features_scaled = pd.DataFrame(features_scaled, columns=features.columns)       # Retransformar en dataframe
+                    del features
                     st.dataframe(features_scaled.head().style.hide(axis="index"))                   # Eliminar el index
 
                 # Sección desplegable 4: Predicciones
