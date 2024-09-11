@@ -70,28 +70,25 @@ def append_new_data_to_db(
         st.warning("El tamaño del lote es 0. Aumenta el porcentaje o el tamaño de los datos.")
         return
 
-    # Inicializar un DataFrame vacío para almacenar los nuevos datos
-    new_users = pd.DataFrame()
-
     # Verificar si la tabla existe
     if inspector.has_table(table_name):
         query = f'SELECT {", ".join(keys)} FROM {table_name}'
 
-        # Iterar sobre los datos existentes en la base de datos en lotes
-        st.info("Verificando claves existentes en la base de datos...")
+        st.info("Iniciando procesamiento en lotes...")
 
-        # Procesar cada lote del DataFrame
+        # Procesar lotes del DataFrame y compararlos con lotes desde la base de datos
         for start in range(0, len(data), batch_size):
-            batch = data.iloc[start:start + batch_size]
+            batch = data.iloc[start:start + batch_size]  # Obtener lote actual de la DataFrame
 
+            # Inicializar un DataFrame vacío para almacenar los nuevos usuarios de este lote
             new_users_batch = pd.DataFrame()
 
-            # Leer los datos en lotes desde la base de datos para evitar desbordamientos de memoria
+            # Leer y procesar lotes de la base de datos para comparar con los datos actuales
             for chunk in pd.read_sql(query, engine, chunksize=batch_size):
-                # Convertir las claves existentes en el lote en un set de tuplas
+                # Convertir las claves existentes en el lote de la base de datos en un set de tuplas
                 existing_keys = set(chunk.apply(lambda row: tuple(row), axis=1))
 
-                # Filtrar los datos del batch que no están en las claves existentes
+                # Filtrar los datos del lote actual que no estén en las claves existentes
                 mask = batch[keys].apply(lambda row: tuple(row) not in existing_keys, axis=1)
                 batch_new_data = batch[mask]
 
@@ -104,7 +101,7 @@ def append_new_data_to_db(
 
             # Si hay nuevos datos en este lote, insertarlos en la base de datos
             if not new_users_batch.empty:
-                st.info(f"Insertando nuevos datos del lote {start//batch_size + 1}...")
+                st.info(f"Insertando nuevos datos del lote {start // batch_size + 1}...")
                 new_users_batch.to_sql(table_name, engine, if_exists='append', index=index)
 
             # Liberar memoria del lote procesado

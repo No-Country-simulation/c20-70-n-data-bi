@@ -36,9 +36,9 @@ if codigo_acceso == "1234":
     # Mostrar dataframes en cada columna
     with col_metrics:
         st.subheader("Métricas")
-        st.markdown(f'<p style="font-size:18px;">No. de Transacciones: <span style="color:green;">{n_transactions}</span></p>', unsafe_allow_html=True)
-        st.markdown(f'<p style="font-size:18px;">No. de Fraudes: <span style="color:red;">{n_frauds}</span></p>', unsafe_allow_html=True)
-        st.markdown(f'<p style="font-size:18px;">No. de Usuarios:<br> <span style="color:white;">{n_users}</span></p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="font-size:18px;">No. de Transacciones: <span style="color:green;">{n_transactions}💳</span></p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="font-size:18px;">No. de Fraudes: <span style="color:red;">{n_frauds}🚨</span></p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="font-size:18px;">No. de Usuarios:<br> <span style="color:white;">{n_users}👥</span></p>', unsafe_allow_html=True)
 
     with col_top_merch:
         st.subheader("Vendedores con Fraude")
