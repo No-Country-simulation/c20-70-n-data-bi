@@ -70,25 +70,29 @@ def append_new_data_to_db(
         st.warning("El tamaño del lote es 0. Aumenta el porcentaje o el tamaño de los datos.")
         return
 
-    # Si la tabla existe, añade los datos
+    # Inicializar un DataFrame vacío para almacenar los nuevos datos
+    new_users = pd.DataFrame()
+
+    # Si la tabla existe, se comparan los datos en lotes
     if inspector.has_table(table_name):
         query = f'SELECT {", ".join(keys)} FROM {table_name}'
 
-        existing_keys = set()
+        # Iterar sobre los datos existentes en la base de datos en lotes
         for chunk in pd.read_sql(query, engine, chunksize=batch_size):
-            existing_keys.update(set(chunk.apply(lambda row: tuple(row), axis=1)))
+            # Convertir las claves existentes en el lote en un set de tuplas
+            existing_keys = set(chunk.apply(lambda row: tuple(row), axis=1))
 
-        # Procesar los nuevos datos en lotes
-        for start in range(0, len(data), batch_size):
-            batch = data.iloc[start:start + batch_size]
-            new_data_keys = set(batch[keys].apply(lambda row: tuple(row), axis=1))
+            # Filtrar los datos de `data` que no están en las claves existentes y añadirlos a `new_users`
+            data_chunk = data[data[keys].apply(lambda row: tuple(row) not in existing_keys, axis=1)]
+            new_users = pd.concat([new_users, data_chunk], ignore_index=True)
             
-            # Filtrar los nuevos usuarios que no están en las claves existentes
-            new_users = batch[batch[keys].apply(lambda row: tuple(row) not in existing_keys, axis=1)]
-
-            if not new_users.empty:
-                # Insertar los datos nuevos en la base de datos
-                new_users.to_sql(table_name, engine, if_exists='append', index=index)
+    # Si no existe, crear la tabla y almacenar todos los datos
     else:
-        # Si no existe, crea la tabla
         data.to_sql(table_name, engine, index=index, chunksize=batch_size)
+        return
+
+    # Si hay nuevos usuarios, insertar los datos en la base de datos
+    if not new_users.empty:
+        new_users.to_sql(table_name, engine, if_exists='append', index=index, chunksize=batch_size)
+    else:
+        st.info("No hay nuevos datos para insertar.")
