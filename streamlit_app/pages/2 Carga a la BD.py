@@ -66,10 +66,15 @@ with col_table_predictions:
 if st.button("Cargar datos a la base de datos"):
     try:
         append_new_data_to_db(['cc_num'], 'users', users, engine)
+        st.success("La tabla de Usuarios ha sido cargada en la Base de datos.")
         append_new_data_to_db(['trans_num'], 'transactions', transactions, engine)
+        st.success("La tabla de Transacciones ha sido cargada en la Base de datos.")
         append_new_data_to_db(['city', 'state'], 'locations', locations, engine)
+        st.success("La tabla de Ubicaciones ha sido cargada en la Base de datos.")
         append_new_data_to_db(['merchant'], 'merchants', merchants, engine)
+        st.success("La tabla de Vendedores ha sido cargada en la Base de datos.")
         append_new_data_to_db(['trans_num'], 'predictions', predictions_df.reset_index(), engine)
-        st.success("Las tablas han sido cargadas en la Base de datos.")
+        st.success("La tabla de Predicciones ha sido cargada en la Base de datos.")
+
     except Exception as e:
         st.error(f"Error al cargar los datos: {e}")

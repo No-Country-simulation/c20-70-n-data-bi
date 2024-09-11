@@ -41,10 +41,11 @@ def append_new_data_to_db(
     table_name: str, 
     data: pd.DataFrame, 
     engine, 
-    index: bool = False
+    index: bool = False, 
+    batch_size: int = 10000  # Procesar en lotes de 10,000 filas por defecto
 ) -> None:
     """
-    Agrega nuevos datos a la base de datos si no existen.
+    Agrega nuevos datos a la base de datos en lotes si no existen.
 
     Args:
         keys (List[str]): Lista de nombres de columnas que se utilizan como claves primarias para la identificación de duplicados.
@@ -52,26 +53,34 @@ def append_new_data_to_db(
         data (pd.DataFrame): DataFrame que contiene los datos a agregar.
         engine: Conexión al motor de la base de datos.
         index (bool, optional): Si se debe escribir el índice. Default es False.
+        batch_size (int, optional): Tamaño de los lotes para el procesamiento. Default es 10,000.
     """
+    from sqlalchemy import inspect
+
     # Permite leer si existe una tabla
     inspector = inspect(engine)
     
     # Si la tabla existe, añade los datos
     if inspector.has_table(table_name):
-        # Leer la tabla existente en la base de datos
+        # Leer la tabla existente en la base de datos en lotes
         query = f'SELECT {", ".join(keys)} FROM {table_name}'
-        existing_table = pd.read_sql(query, engine)
+        
+        existing_keys = set()
+        for chunk in pd.read_sql(query, engine, chunksize=batch_size):
+            # Agregar claves existentes en memoria
+            existing_keys.update(set(chunk.apply(lambda row: tuple(row), axis=1)))
 
-        # Verificar la existencia de las claves primarias para evitar duplicados
-        # Es necesario realizar una combinación de las claves primarias para la comparación
-        existing_keys = set(existing_table.apply(lambda row: tuple(row), axis=1))
-        new_data_keys = set(data[keys].apply(lambda row: tuple(row), axis=1))
+        # Filtrar los datos nuevos en lotes
+        for start in range(0, len(data), batch_size):
+            batch = data.iloc[start:start + batch_size]
+            new_data_keys = set(batch[keys].apply(lambda row: tuple(row), axis=1))
+            
+            # Filtrar los nuevos usuarios que no están en las claves existentes
+            new_users = batch[batch[keys].apply(lambda row: tuple(row) not in existing_keys, axis=1)]
 
-        # Filtrar los datos nuevos que no están en la tabla existente
-        new_users = data[data[keys].apply(lambda row: tuple(row) not in existing_keys, axis=1)]
-
-        # Insertar los datos nuevos en la base de datos
-        new_users.to_sql(table_name, engine, if_exists='append', index=index)
-    # Si no existe, crea la tabla
+            if not new_users.empty:
+                # Insertar los datos nuevos en la base de datos
+                new_users.to_sql(table_name, engine, if_exists='append', index=index)
     else:
-        data.to_sql(table_name, engine, index=index)
+        # Si no existe, crea la tabla
+        data.to_sql(table_name, engine, index=index, chunksize=batch_size)
