@@ -67,6 +67,7 @@ if st.button("Cargar datos a la base de datos"):
     try:
         append_new_data_to_db(['cc_num'], 'users', users, engine)
         st.success("La tabla de Usuarios ha sido cargada en la Base de datos.")
+        del users
         append_new_data_to_db(['trans_num'], 'transactions', transactions, engine)
         st.success("La tabla de Transacciones ha sido cargada en la Base de datos.")
         append_new_data_to_db(['city', 'state'], 'locations', locations, engine)

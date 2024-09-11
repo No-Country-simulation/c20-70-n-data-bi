@@ -2,6 +2,7 @@ from typing import List
 import os
 from sqlalchemy import create_engine, inspect
 import pandas as pd
+import streamlit as st
 
 def db_conn() -> object:
     """
@@ -42,10 +43,10 @@ def append_new_data_to_db(
     data: pd.DataFrame, 
     engine, 
     index: bool = False, 
-    batch_size: int = 10000  # Procesar en lotes de 10,000 filas por defecto
+    batch_percentage: float = 0.1  # Procesar en lotes de 10% del total por defecto
 ) -> None:
     """
-    Agrega nuevos datos a la base de datos en lotes si no existen.
+    Agrega nuevos datos a la base de datos en lotes si no existen, basado en un porcentaje del tamaño de los datos.
 
     Args:
         keys (List[str]): Lista de nombres de columnas que se utilizan como claves primarias para la identificación de duplicados.
@@ -53,24 +54,31 @@ def append_new_data_to_db(
         data (pd.DataFrame): DataFrame que contiene los datos a agregar.
         engine: Conexión al motor de la base de datos.
         index (bool, optional): Si se debe escribir el índice. Default es False.
-        batch_size (int, optional): Tamaño de los lotes para el procesamiento. Default es 10,000.
+        batch_percentage (float, optional): Porcentaje de filas a procesar en cada lote. Default es 0.1 (10%).
     """
-    from sqlalchemy import inspect
+    # Verificar que el porcentaje es válido
+    if not 0 < batch_percentage <= 1:
+        raise ValueError("El porcentaje debe estar entre 0 y 1.")
 
     # Permite leer si existe una tabla
     inspector = inspect(engine)
-    
+
+    # Calcular el tamaño del lote basado en el porcentaje
+    batch_size = int(len(data) * batch_percentage)
+
+    if batch_size == 0:
+        st.warning("El tamaño del lote es 0. Aumenta el porcentaje o el tamaño de los datos.")
+        return
+
     # Si la tabla existe, añade los datos
     if inspector.has_table(table_name):
-        # Leer la tabla existente en la base de datos en lotes
         query = f'SELECT {", ".join(keys)} FROM {table_name}'
-        
+
         existing_keys = set()
         for chunk in pd.read_sql(query, engine, chunksize=batch_size):
-            # Agregar claves existentes en memoria
             existing_keys.update(set(chunk.apply(lambda row: tuple(row), axis=1)))
 
-        # Filtrar los datos nuevos en lotes
+        # Procesar los nuevos datos en lotes
         for start in range(0, len(data), batch_size):
             batch = data.iloc[start:start + batch_size]
             new_data_keys = set(batch[keys].apply(lambda row: tuple(row), axis=1))
