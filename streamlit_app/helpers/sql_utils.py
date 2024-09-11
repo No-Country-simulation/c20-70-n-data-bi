@@ -1,6 +1,6 @@
 from typing import List
 import os
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, text
 import pandas as pd
 import streamlit as st
 
@@ -113,3 +113,37 @@ def append_new_data_to_db(
         st.info("Creando nueva tabla en la base de datos e insertando datos.")
         data.to_sql(table_name, engine, index=index, chunksize=batch_size)
         st.success("Datos insertados correctamente.")
+
+def check_users_in_db(df: pd.DataFrame, user_column: str, table_name: str, engine) -> pd.DataFrame:
+    """
+    Verifica si los usuarios en el DataFrame están en la base de datos.
+
+    Args:
+        df (pd.DataFrame): DataFrame que contiene los usuarios a verificar.
+        user_column (str): Nombre de la columna en el DataFrame que contiene los identificadores de usuario.
+        engine: Conexión al motor de la base de datos.
+
+    Returns:
+        pd.DataFrame: DataFrame con los usuarios que existen en la base de datos.
+    """
+    user_ids = df[user_column].tolist()
+
+    # Dividir la lista de IDs en bloques más pequeños para evitar problemas de longitud de consulta
+    chunks = [user_ids[i:i + 1000] for i in range(0, len(user_ids), 1000)]
+
+    # Inicializar un DataFrame para almacenar los usuarios existentes
+    existing_users = pd.DataFrame()
+
+    # Ejecutar consultas en bloques
+    with engine.connect() as connection:
+        for chunk in chunks:
+            query = text(f"""
+            SELECT {user_column}
+            FROM {table_name}
+            WHERE {user_column} IN :ids
+            """)
+            result = connection.execute(query, {"ids": tuple(chunk)})
+            existing_users_chunk = pd.DataFrame(result.fetchall(), columns=[user_column])
+            existing_users = pd.concat([existing_users, existing_users_chunk])
+
+    return existing_users
