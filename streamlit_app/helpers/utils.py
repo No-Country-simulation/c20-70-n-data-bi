@@ -134,6 +134,11 @@ def config_sidebar(logo_img_path: str = './streamlit_app/logo.png') -> str:
         if codigo_acceso == "1234":  
             st.session_state.access_granted = True
             st.sidebar.success("Acceso concedido.")
+            st.sidebar.write("""
+            El flujo es el siguiente:\n
+            1.- Predicciones: Carga el csv con tus datos y obten predicciones en tiempo real.\n
+            2.- Carga a la BD: Una vez cargado el archivo, podrás decidir si cargar los datos a PostgreSQL. 
+            """)
         else:
             st.session_state.access_granted = False
             st.sidebar.error("Código de acceso incorrecto.")

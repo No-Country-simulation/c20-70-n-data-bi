@@ -10,9 +10,8 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # Importaciones locales
-from streamlit_app.helpers.preprocessing import preprocessing_data
-#from streamlit_app.helpers.sql_utils import append_new_data_to_db, db_conn
-from streamlit_app.helpers.utils import catboost_model, extract_zip_to_csv, frauds_per_day, load_data_from_zip
+from helpers.preprocessing import preprocessing_data
+from helpers.utils import catboost_model, extract_zip_to_csv, frauds_per_day, load_data_from_zip
 
 st.title("Página de Análisis")
 
@@ -42,54 +41,20 @@ if success_file:
 
         # Guardarlo en una variable multipagina
         st.session_state.data = df
-    # Extraer el CSV en el directorio actual
-    #extracted_files = extract_zip_to_csv(uploaded_file)
 
     # Si solo hay 1 archivo CSV
     if len(extracted_files) == 1:
-        # Obtener la ubicación del archivo
-        #csv_file_path = os.path.join(os.getcwd(), extracted_files[0])
+        # Eliminar el archivo .zip
         del uploaded_file
         try:
             # Sección desplegable 2: Análisis Exploratorio de los Datos
             with st.expander("Análisis Exploratorio de los Datos"):
-                # Leer el archivo CSV
-                #df = pd.read_csv(csv_file_path)
 
                 # Previsualización del dataset
                 st.subheader("Previsualización de datos")
                 st.write("Primeras 5 filas del archivo:")
                 st.dataframe(df.head().style.hide(axis="index"))        # Mostrar las primeras 5 filas
                 st.write(f"Un total de {df.shape[0]} transacciones.")   # Mostrar la cantidad de transacciones
-
-                # # Mostrar los porcentajes de fraude
-                # st.subheader("Top 5 de Porcentajes de Fraude mas Altos")
-
-                # # Carga de datasets con el top 5 de fraudes
-                # top_5_fraud_merch = pd.read_csv('streamlit_app/top_5_fraud_merch.csv')
-                # top_5_fraud_city = pd.read_csv('streamlit_app/top_5_fraud_city.csv')
-                # top_5_fraud_state = pd.read_csv('streamlit_app/top_5_fraud_state.csv')
-
-                # # Renombrar columnas
-                # top_5_fraud_merch.columns = ['Vendedor', 'Fraude [%]', 'Fraudes [#]']
-                # top_5_fraud_city.columns = ['Ciudad', 'Fraude [%]', 'Fraudes [#]']
-                # top_5_fraud_state.columns = ['Estado', 'Fraude [%]', 'Fraudes [#]']
-
-                # # Crear tres columnas para cada top
-                # col_top_merch, col_top_city, col_top_state = st.columns(3)
-
-                # # Mostrar dataframes en cada columna
-                # with col_top_merch:
-                #     st.subheader("Vendedores")
-                #     st.dataframe(top_5_fraud_merch.set_index(top_5_fraud_merch.columns[0]))
-
-                # with col_top_city:
-                #     st.subheader("Ciudades")
-                #     st.dataframe(top_5_fraud_city.set_index(top_5_fraud_city.columns[0]))
-
-                # with col_top_state:
-                #     st.subheader("Estados")
-                #     st.dataframe(top_5_fraud_state.set_index(top_5_fraud_state.columns[0]))
                 
                 # Calcular los fraudes por día
                 st.subheader("Tendencia de Fraude")
@@ -218,68 +183,6 @@ if success_file:
                     values = [fraud_trans_cnt, safety_trans_cnt]
                     fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=.5)])
                     st.plotly_chart(fig)
-                    
-
-
-            # Sección desplegable 5: Carga a la base de datos
-            # with st.expander("Carga a la base de datos PostgreSQL"): 
-            #     # Cargar la conexión a la DB
-            #     #engine = db_conn()
-
-            #     st.subheader("Creación de tablas relacionales")
-                
-            #     # Crear la tabla users
-            #     users = df[['cc_num', 'zip', 'first', 'last', 'gender', 'street', 'city', 'state', 'job', 'dob']].drop_duplicates()
-            #     # Mostrar las primeras 5 filas
-            #     st.write("Tabla: Usuarios [primeras 5 filas]")
-            #     st.dataframe(users.head())
-            #     # Cargar la tabla a la DB
-            #     append_new_data_to_db(['cc_num'], 'users', users, engine)
-            #     del users
-
-            #     # Crear la tabla transactions
-            #     transactions = df[['trans_date_trans_time', 'cc_num', 'merchant', 'category', 'amt', 'lat', 'long', 'trans_num', 'unix_time', 'is_fraud']].drop_duplicates()
-            #     # Mostrar las primeras 5 filas
-            #     st.write("Tabla: Transacciones [primeras 5 filas]")
-            #     st.dataframe(transactions.head())                        
-            #     # Cargar la tabla a la DB
-            #     append_new_data_to_db(['trans_num'], 'transactions', transactions, engine)
-            #     del transactions
-
-            #     col_table_locations, col_table_merchants, col_table_predictions = st.columns([1, 1.25, 1])
-
-            #     with col_table_locations: 
-            #         # Crear la tabla locations
-            #         locations = df[['city', 'state', 'city_pop']].drop_duplicates()
-            #         # Mostrar las primeras 5 filas
-            #         st.write("Tabla: Ubicaciones [primeras 5 filas]")
-            #         st.dataframe(locations.head())
-            #         # Cargar la tabla a la DB
-            #         append_new_data_to_db(['city', 'state'], 'locations', locations, engine)
-            #         del locations
-
-            #     with col_table_merchants:
-            #         # Crear la tabla merchants
-            #         merchants = df[['merchant', 'merch_lat', 'merch_long']].drop_duplicates()
-            #         # Mostrar las primeras 5 filas
-            #         st.write("Tabla: Vendedores [primeras 5 filas]")
-            #         st.dataframe(merchants.head())
-            #         # Cargar la tabla a la DB
-            #         append_new_data_to_db(['merchant'], 'merchants', merchants, engine)
-            #         del merchants
-            #         del df
-            #     with col_table_predictions:
-            #         # Mostrar las primeras 5 filas de predictions
-            #         st.write("Tabla: Predicciones [primeras 5 filas]")
-            #         st.dataframe(predictions_df.head())
-            #         # Cargar la tabla a la DB
-            #         append_new_data_to_db(['trans_num'], 'predictions', predictions_df.reset_index(), engine)
-            #         predictions_df.to_sql('predictions', engine, if_exists='replace')
-            #         del predictions_df
-                
-
-            #     # Mensaje de éxito
-            #     st.success("Las tablas han sido cargadas en la Base de datos.")
 
         except Exception as e:
             st.error(f"Error al procesar el archivo CSV: {e}")
