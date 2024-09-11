@@ -2,6 +2,11 @@ import streamlit as st
 
 from helpers.sql_utils import append_new_data_to_db, db_conn
 
+# Verificar si el acceso ha sido concedido
+if not st.session_state.get('access_granted', False):
+    st.error("Acceso restringido. Por favor, ingresa el código de acceso en la barra lateral.")
+    st.stop()
+
 st.subheader("Creación de tablas relacionales")
 
 # Verificar si la conexión ya está almacenada en session_state

@@ -17,7 +17,7 @@ st.title("Página de Análisis")
 
 # Verificar si el acceso ha sido concedido
 if not st.session_state.get('access_granted', False):
-    st.error("Acceso denegado. Por favor, ingresa el código de acceso en la barra lateral.")
+    st.error("Acceso restringido. Por favor, ingresa el código de acceso en la barra lateral.")
     st.stop()
 
 # Sección desplegable 1: Carga de datos

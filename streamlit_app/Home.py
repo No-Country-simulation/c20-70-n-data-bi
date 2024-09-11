@@ -82,3 +82,5 @@ if codigo_acceso == "1234":
     # Mostrar la gráfica en Streamlit
     st.plotly_chart(fig)
     del global_frauds_per_day
+else:
+    st.warning("Acceso restringido. Por favor, ingresa el código de acceso en la barra lateral.")
