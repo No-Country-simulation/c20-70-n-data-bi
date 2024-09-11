@@ -127,7 +127,17 @@ def config_sidebar(logo_img_path: str = './streamlit_app/logo.png') -> str:
 
     # Solicitar el código de acceso
     codigo_acceso = st.sidebar.text_input("Ingresa el código de acceso", type="password")
-    
+
+    # Guardar el código de acceso en el estado de sesión
+    if codigo_acceso:
+        # Cambia la clave 'access_granted' en el estado de sesión si el código es correcto
+        if codigo_acceso == "1234":  
+            st.session_state.access_granted = True
+            st.sidebar.success("Acceso concedido.")
+        else:
+            st.session_state.access_granted = False
+            st.sidebar.error("Código de acceso incorrecto.")
+
     return codigo_acceso
 
 def datetime_split(

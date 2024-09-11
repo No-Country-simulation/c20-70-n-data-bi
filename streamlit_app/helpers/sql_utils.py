@@ -2,7 +2,6 @@ from typing import List
 import os
 from sqlalchemy import create_engine, inspect
 import pandas as pd
-import streamlit as st
 
 def db_conn() -> object:
     """
