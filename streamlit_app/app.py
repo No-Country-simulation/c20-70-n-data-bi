@@ -120,6 +120,13 @@ if codigo_acceso == "1234":
         st.subheader("Carga los datos a predecir") 
         success_file, uploaded_file = load_data_from_zip()
     
+    # Verificar si la conexión ya está almacenada en session_state
+    if 'db_engine' not in st.session_state:
+        st.session_state.db_engine = db_conn()
+
+    # Usar la conexión almacenada
+    engine = st.session_state.db_engine
+
     # Si el archivo es correcto
     if success_file:
 
@@ -315,7 +322,7 @@ if codigo_acceso == "1234":
                 # Sección desplegable 5: Carga a la base de datos
                 with st.expander("Carga a la base de datos PostgreSQL"): 
                     # Cargar la conexión a la DB
-                    engine = db_conn()
+                    #engine = db_conn()
 
                     st.subheader("Creación de tablas relacionales")
                     
@@ -358,7 +365,7 @@ if codigo_acceso == "1234":
                         # Cargar la tabla a la DB
                         append_new_data_to_db(['merchant'], 'merchants', merchants, engine)
                         del merchants
-
+                        del df
                     with col_table_predictions:
                         # Mostrar las primeras 5 filas de predictions
                         st.write("Tabla: Predicciones [primeras 5 filas]")
@@ -367,7 +374,7 @@ if codigo_acceso == "1234":
                         append_new_data_to_db(['trans_num'], 'predictions', predictions_df.reset_index(), engine)
                         predictions_df.to_sql('predictions', engine, if_exists='replace')
                         del predictions_df
-                        del df
+                    
 
                     # Mensaje de éxito
                     st.success("Las tablas han sido cargadas en la Base de datos.")

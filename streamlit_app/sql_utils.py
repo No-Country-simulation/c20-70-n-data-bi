@@ -4,7 +4,6 @@ from sqlalchemy import create_engine, inspect
 import pandas as pd
 import streamlit as st
 
-@st.cache_data
 def db_conn() -> object:
     """
     Crea y retorna una conexión a una base de datos PostgreSQL utilizando las credenciales almacenadas en las variables de entorno.
@@ -38,7 +37,6 @@ def db_conn() -> object:
 
     return engine
 
-@st.cache_data
 def append_new_data_to_db(
     keys: List[str], 
     table_name: str, 
@@ -68,7 +66,7 @@ def append_new_data_to_db(
         # Verificar la existencia de las claves primarias para evitar duplicados
         # Es necesario realizar una combinación de las claves primarias para la comparación
         existing_keys = set(existing_table.apply(lambda row: tuple(row), axis=1))
-        new_data_keys = set(data[keys].apply(lambda row: tuple(row), axis=1))
+        #new_data_keys = set(data[keys].apply(lambda row: tuple(row), axis=1))
 
         # Filtrar los datos nuevos que no están en la tabla existente
         new_users = data[data[keys].apply(lambda row: tuple(row) not in existing_keys, axis=1)]
