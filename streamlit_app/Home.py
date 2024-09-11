@@ -12,7 +12,7 @@ import streamlit as st
 # Importaciones locales
 # from streamlit_app.helpers.preprocessing import preprocessing_data
 # from streamlit_app.helpers.sql_utils import append_new_data_to_db, db_conn
-from streamlit_app.helpers.utils import config_sidebar # extract_zip_to_csv, frauds_per_day, load_data_from_zip
+from helpers.utils import config_sidebar # extract_zip_to_csv, frauds_per_day, load_data_from_zip
 
 # Ajustar el ancho para toda la pantalla 
 st.set_page_config(page_title="Detección de Fraude", layout="wide")
