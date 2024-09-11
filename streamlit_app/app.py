@@ -27,9 +27,9 @@ if codigo_acceso == "1234":
     st.title("Detección de Fraude en Transacciones con Tarjetas de Crédito")
 
     # Obtener los datos de la DB
-    n_transactions = pd.read_sql('SELECT COUNT(*) FROM public.transactions', db_conn())
-    n_frauds = pd.read_sql('SELECT COUNT(*) FROM public.transactions WHERE is_fraud = 1', db_conn())
-    n_users = pd.read_sql('SELECT COUNT(*) FROM public.users', db_conn())
+    n_transactions = 1852394
+    n_frauds = 9651
+    n_users = 999
 
     # Carga de datasets con el top 5 de fraudes
     top_5_fraud_merch = pd.read_csv('streamlit_app/top_5_fraud_merch.csv')
@@ -47,9 +47,9 @@ if codigo_acceso == "1234":
     # Mostrar dataframes en cada columna
     with col_metrics:
         st.subheader("Métricas")
-        st.markdown(f'<p style="font-size:18px;">No. de Transacciones: <span style="color:green;">{n_transactions.values[0][0]}</span></p>', unsafe_allow_html=True)
-        st.markdown(f'<p style="font-size:18px;">No. de Fraudes: <span style="color:red;">{n_frauds.values[0][0]}</span></p>', unsafe_allow_html=True)
-        st.markdown(f'<p style="font-size:18px;">No. de Usuarios:<br> <span style="color:white;">{n_users.values[0][0]}</span></p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="font-size:18px;">No. de Transacciones: <span style="color:green;">{n_transactions}</span></p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="font-size:18px;">No. de Fraudes: <span style="color:red;">{n_frauds}</span></p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="font-size:18px;">No. de Usuarios:<br> <span style="color:white;">{n_users}</span></p>', unsafe_allow_html=True)
 
     with col_top_merch:
         st.subheader("Vendedores con Fraude")
@@ -63,24 +63,26 @@ if codigo_acceso == "1234":
         st.subheader("Estados con Fraude")
         st.dataframe(top_5_fraud_state.set_index(top_5_fraud_state.columns[0]))
     
-    # Extraer de la DB los fraudes por día
-    query_frauds_per_week = """
-    SELECT
-        trans_date_trans_time,
-        is_fraud
-    FROM
-        public.transactions
-    WHERE
-        is_fraud = 1;
-    """
-    global_frauds_per_day = pd.read_sql(query_frauds_per_week, db_conn())
-    global_frauds_per_day['trans_date_trans_time'] = pd.to_datetime(global_frauds_per_day['trans_date_trans_time'])
-    global_frauds_per_day.set_index('trans_date_trans_time', inplace=True)
-    global_frauds_per_day = global_frauds_per_day.resample('D').size().reset_index(name='total_transacciones')
-    global_frauds_per_day.set_index('trans_date_trans_time', inplace=True)
+    # # Extraer de la DB los fraudes por día
+    # query_frauds_per_week = """
+    # SELECT
+    #     trans_date_trans_time,
+    #     is_fraud
+    # FROM
+    #     public.transactions
+    # WHERE
+    #     is_fraud = 1;
+    # """
+    # global_frauds_per_day = pd.read_sql(query_frauds_per_week, db_conn())
+    # global_frauds_per_day['trans_date_trans_time'] = pd.to_datetime(global_frauds_per_day['trans_date_trans_time'])
+    # global_frauds_per_day.set_index('trans_date_trans_time', inplace=True)
+    # global_frauds_per_day = global_frauds_per_day.resample('D').size().reset_index(name='total_transacciones')
+    # global_frauds_per_day.set_index('trans_date_trans_time', inplace=True)
 
-    # Convertir las fechas a formato español
-    global_frauds_per_day.index = global_frauds_per_day.index.strftime('%d %B %Y')  # Ejemplo: 01 abril 2019
+    # # Convertir las fechas a formato español
+    # global_frauds_per_day.index = global_frauds_per_day.index.strftime('%d %B %Y')  # Ejemplo: 01 abril 2019
+    global_frauds_per_day = pd.read_csv('./streamlit_app/global_frauds_per_day.csv')
+    #global_frauds_per_day.to_csv('./streamlit_app/global_frauds_per_day.csv', index=False)
 
     # Crear una figura de Plotly para la gráfica de línea
     fig = go.Figure()
