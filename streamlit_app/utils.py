@@ -10,6 +10,7 @@ import joblib
 import pandas as pd
 import streamlit as st
 
+
 def calc_pct_n_rank(
     data: pd.DataFrame,
     group_merch_path: str = 'streamlit_app/group_fraud_by_merch.csv',

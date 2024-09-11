@@ -47,26 +47,31 @@ def append_new_data_to_db(
     Agrega nuevos datos a la base de datos si no existen.
 
     Args:
-        primary_key (str): Columna clave primaria de la tabla.
+        keys (List[str]): Lista de nombres de columnas que se utilizan como claves primarias para la identificación de duplicados.
         table_name (str): Nombre de la tabla en la base de datos.
         data (pd.DataFrame): DataFrame que contiene los datos a agregar.
         engine: Conexión al motor de la base de datos.
         index (bool, optional): Si se debe escribir el índice. Default es False.
     """
-
-
-    # Añadir los nuevos usuarios a la base de datos
-    #ew_users.to_sql(table_name, engine, if_exists='append', index=index)
-
+    # Permite leer si existe una tabla
     inspector = inspect(engine)
-
-    if not inspector.has_table(table_name):
-        data.to_sql(table_name, engine, index=index)
-    else:
+    
+    # Si la tabla existe, añade los datos
+    if inspector.has_table(table_name):
         # Leer la tabla existente en la base de datos
         query = f'SELECT {", ".join(keys)} FROM {table_name}'
         existing_table = pd.read_sql(query, engine)
 
-        # Calcular los usuarios que no existen en la base de datos
-        new_users = data[~data[keys].isin(existing_table[keys])]
+        # Verificar la existencia de las claves primarias para evitar duplicados
+        # Es necesario realizar una combinación de las claves primarias para la comparación
+        existing_keys = set(existing_table.apply(lambda row: tuple(row), axis=1))
+        new_data_keys = set(data[keys].apply(lambda row: tuple(row), axis=1))
+
+        # Filtrar los datos nuevos que no están en la tabla existente
+        new_users = data[data[keys].apply(lambda row: tuple(row) not in existing_keys, axis=1)]
+
+        # Insertar los datos nuevos en la base de datos
         new_users.to_sql(table_name, engine, if_exists='append', index=index)
+    # Si no existe, crea la tabla
+    else:
+        data.to_sql(table_name, engine, index=index)

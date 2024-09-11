@@ -1,6 +1,7 @@
 [theme]
-primaryColor="#b7a9a9"
-backgroundColor="#cbe6cb"
-secondaryBackgroundColor="#1d9c9c"
-textColor="#000000"
-font="serif"
+base="dark"
+primaryColor="#e74c3c"  # Un rojo elegante para destacar elementos clave
+backgroundColor="#1b1b1b"  # Un gris oscuro profundo
+secondaryBackgroundColor="#2c3e50"  # Un azul oscuro para áreas secundarias
+textColor="#ecf0f1"  # Un blanco ligeramente grisáceo para el texto
+font="sans serif"  # Fuente moderna y limpia
