@@ -60,7 +60,7 @@ def append_new_data_to_db(
     if not 0 < batch_percentage <= 1:
         raise ValueError("El porcentaje debe estar entre 0 y 1.")
 
-    # Permite leer si existe una tabla
+    # Inspecciona si la tabla existe
     inspector = inspect(engine)
 
     # Calcular el tamaño del lote basado en el porcentaje
@@ -73,26 +73,38 @@ def append_new_data_to_db(
     # Inicializar un DataFrame vacío para almacenar los nuevos datos
     new_users = pd.DataFrame()
 
-    # Si la tabla existe, se comparan los datos en lotes
+    # Verificar si la tabla existe
     if inspector.has_table(table_name):
         query = f'SELECT {", ".join(keys)} FROM {table_name}'
 
         # Iterar sobre los datos existentes en la base de datos en lotes
+        st.info("Verificando claves existentes en la base de datos...")
+
         for chunk in pd.read_sql(query, engine, chunksize=batch_size):
             # Convertir las claves existentes en el lote en un set de tuplas
             existing_keys = set(chunk.apply(lambda row: tuple(row), axis=1))
 
-            # Filtrar los datos de `data` que no están en las claves existentes y añadirlos a `new_users`
-            data_chunk = data[data[keys].apply(lambda row: tuple(row) not in existing_keys, axis=1)]
-            new_users = pd.concat([new_users, data_chunk], ignore_index=True)
+            # Filtrar los datos de `data` que no están en las claves existentes
+            mask = data[keys].apply(lambda row: tuple(row) not in existing_keys, axis=1)
+            batch_new_data = data[mask]
             
-    # Si no existe, crear la tabla y almacenar todos los datos
-    else:
-        data.to_sql(table_name, engine, index=index, chunksize=batch_size)
-        return
+            # Si hay datos nuevos, los acumulamos
+            if not batch_new_data.empty:
+                new_users = pd.concat([new_users, batch_new_data])
 
-    # Si hay nuevos usuarios, insertar los datos en la base de datos
-    if not new_users.empty:
-        new_users.to_sql(table_name, engine, if_exists='append', index=index, chunksize=batch_size)
+            # Liberar memoria del chunk
+            del chunk
+
+        # Si hay datos nuevos, los insertamos en la base de datos en lotes
+        if not new_users.empty:
+            st.info("Insertando nuevos datos...")
+            for start in range(0, len(new_users), batch_size):
+                new_users.iloc[start:start + batch_size].to_sql(table_name, engine, if_exists='append', index=index)
+            st.success("Datos nuevos insertados correctamente.")
+        else:
+            st.info("No se encontraron nuevos datos para insertar.")
     else:
-        st.info("No hay nuevos datos para insertar.")
+        # Si la tabla no existe, crearla
+        st.info("Creando nueva tabla en la base de datos e insertando datos.")
+        data.to_sql(table_name, engine, index=index, chunksize=batch_size)
+        st.success("Datos insertados correctamente.")
