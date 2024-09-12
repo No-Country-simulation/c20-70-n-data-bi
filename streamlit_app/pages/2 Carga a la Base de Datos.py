@@ -1,13 +1,18 @@
 import streamlit as st
 
-from helpers.sql_utils import append_new_data_to_db, db_conn, check_users_in_db
+from helpers.sql_utils import db_conn
+
+st.title("2.- Previsualización de tablas relacionales para la carga en PostgreSQL")
+
+st.sidebar.write("Guía de usuario:")
+st.sidebar.write("- Se generan 5 tablas relacionales: Usuarios, vendedores, predicciones, ubicaciones y transacciones.")
+st.sidebar.write("- PSe muestra una previsualización [5 filas] de cada tabla generada.")
+st.sidebar.write("- Haz click en el botón 'Cargar datos a la base de datos' para iniciar el proceso.")
 
 # Verificar si el acceso ha sido concedido
 if not st.session_state.get('access_granted', False):
     st.error("Acceso restringido. Por favor, ingresa el código de acceso en la barra lateral.")
     st.stop()
-
-st.subheader("Creación de tablas relacionales")
 
 # Verificar si la conexión ya está almacenada en session_state
 if 'db_engine' not in st.session_state:

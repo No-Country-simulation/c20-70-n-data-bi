@@ -13,7 +13,13 @@ import streamlit as st
 from helpers.preprocessing import preprocessing_data
 from helpers.utils import catboost_model, extract_zip_to_csv, frauds_per_day, load_data_from_zip
 
-st.title("Página de Análisis")
+st.title("1.- Análisis y Predicciones")
+
+st.sidebar.write("Guía de usuario:")
+st.sidebar.write("- Carga los datos de las transacciones que necesitas predecir. El archivo debe ser tipo [.zip] y contener solo 1 archivo [.csv].")
+st.sidebar.write("- Podras visualizar en tiempo real estádisticas de tus datos, metricas del modelo IA y obtener predicciones de fraude.")
+st.sidebar.write("- Si deseas cargar las tablas generadas a tu base de datos PostgreSQL, accede a la página 'Carga a la BD'")
+
 
 # Verificar si el acceso ha sido concedido
 if not st.session_state.get('access_granted', False):
