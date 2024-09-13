@@ -9,13 +9,18 @@ Laura Vasquez:
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/laura-cristina-vasquez-analistadedatos)
 [![Correo Electrónico](https://img.shields.io/badge/Correo%20Electrónico-lauravasquez112399@gmail.com-red?style=for-the-badge&logo=mail.ru)](mailto:lauravasquez112399@gmail.com)  
 
+
 ## Descripción
-Desarrollar un modelo predictivo para detectar transacciones fraudulentas en una plataforma de pagos electrónicos, utilizando técnicas de aprendizaje automático y análisis de comportamiento.
+
+Este proyecto tiene como objetivo desarrollar un sistema de predicción de fraudes en transacciones financieras a través de técnicas de machine learning. Detectar fraudes a tiempo puede prevenir pérdidas económicas significativas para las instituciones financieras y los usuarios finales. Usamos un dataset con transacciones etiquetadas como fraudulentas o legítimas, y entrenamos un modelo que puede detectar patrones anómalos en las transacciones.
+
+El proyecto no solo permite la predicción en tiempo real, sino que también facilita la carga de información a una base de datos para futuras consultas y análisis visuales en Power BI.
+
 
 # Entregables:
 - Pagina Web: El **usuario** podra cargar un .zip que contenga el archivo .csv con los datos que necesitan predicción. La pagina predice en tiempo real, carga los datos a la base de datos en PostgreSQL y devuelve feedback en forma de visualizaciones. 
 - Base de datos en PostgreSQL: El **usuario** puede realizar consultas SQL al conectarse en la base de datos. 
-- Power BI: A partir del Análisis Exploratorio de Datos se responden algunas preguntas a traves de poderosas visualizaciones. 
+- Power BI: A partir del Análisis Exploratorio de Datos se responden algunas preguntas a traves de visualizaciones. 
 
 ## Tecnolgías
 ![Python](https://img.shields.io/badge/-Python-blue?style=for-the-badge&logo=python&logoColor=white&logoWidth=40)
@@ -58,12 +63,30 @@ El dataset fue descargado de Kaggle con el titulo "Credit Card Transactions Frau
 #### Variable objetivo
 - `is_fraud` - Indica si la transacción es fraude
 
-## Instalación de dependencias
 
-Para instalar las dependencias necesarias para este proyecto, puedes ejecutar el siguiente comando:
+## Instrucciones para ejecutar el proyecto en Streamlit.
 
-```bash
-pip install -r requirements.txt
-```
-**Nota** Esta versión de Boruta puede arrojar un error al utilizar np.float, np.int y np.bool. Basta con reemplazarlos por
-float, int, bool respectivamente en el archivo donde este el error. 
+1. Clona este repositorio:
+   ```bash
+   git clone https://github.com/tu_usuario/tu_repositorio.git
+   ```
+2. Navega al directorio del proyecto:
+   ```bash
+   cd tu_repositorio
+   ```
+3. Instala las dependencias del proyecto:
+   ```bash
+   pip install -r streamlit_app/requirements.txt
+   ```
+4. Inicia la aplicación de Streamlit:
+   ```bash
+   streamlit run streamlit_app/Home.py
+   ```
+streamlit run streamlit_app/Home.py
+5. Carga un archivo .csv comprimido en formato .zip desde la página web para obtener predicciones en tiempo real.
+
+### Extra: Instalación de PostgreSQL
+Además se recomienda tener instalado PostgresSQL para la visualización de la información cargada en la base de datos. 
+
+Asegúrate de tener PostgreSQL instalado:
+   - [Guía de instalación de PostgreSQL](https://www.postgresql.org/download/)
