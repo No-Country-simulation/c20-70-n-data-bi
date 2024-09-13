@@ -13,9 +13,9 @@ import streamlit as st
 
 def calc_pct_n_rank(
     data: pd.DataFrame,
-    group_merch_path: str = 'streamlit_app/group_fraud_by_merch.csv',
-    group_city_path: str = 'streamlit_app/group_fraud_by_city.csv',
-    group_state_path: str = 'streamlit_app/group_fraud_by_state.csv',
+    group_merch_path: str = 'streamlit_app/data/group_fraud_by_merch.csv',
+    group_city_path: str = 'streamlit_app/data/group_fraud_by_city.csv',
+    group_state_path: str = 'streamlit_app/data/group_fraud_by_state.csv',
     merch_col_name: str = 'merchant',
     city_col_name: str = 'city',
     state_col_name: str = 'state',
@@ -104,7 +104,7 @@ def catboost_model(
 
     return predictions, accuracy, report_df
 
-def config_sidebar(logo_img_path: str = './streamlit_app/logo.png') -> str:
+def config_sidebar(logo_img_path: str = './streamlit_app/assets/logo.png') -> str:
     """
     Configura la barra lateral de la aplicación Streamlit.
 
@@ -316,7 +316,7 @@ def haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
 
     return distance
 
-def job_encoder(data: pd.DataFrame, job_freq_path: str = 'streamlit_app/job_freq.csv') -> pd.DataFrame:
+def job_encoder(data: pd.DataFrame, job_freq_path: str = 'streamlit_app/data/job_freq.csv') -> pd.DataFrame:
     """
     Codifica la columna de trabajos en el DataFrame original utilizando la frecuencia de profesiones de un archivo CSV.
 
@@ -363,15 +363,9 @@ def load_data_from_zip(key: str = '1') -> tuple:
 
     return success_file, uploaded_file
 
-def ohe_data(data, ohe_path='streamlit_app/onehotencoder.pkl', cols_to_transform=['category', 'gender']):
-    # One Hot Encoding para las categorias sin orden 
-    encoder = joblib.load(ohe_path) # Cargar el codificador desde el archivo
-    data_ohe = encoder.transform(data[cols_to_transform])
-    return data_ohe
-
 def ohe_data(
     data: pd.DataFrame,
-    ohe_path: str = 'streamlit_app/onehotencoder.pkl',
+    ohe_path: str = 'streamlit_app/models/onehotencoder.pkl',
     cols_to_transform: List[str] = ['category', 'gender']
 ) -> pd.DataFrame:
     """

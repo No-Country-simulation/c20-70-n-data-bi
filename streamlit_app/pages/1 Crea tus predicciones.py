@@ -127,7 +127,7 @@ if success_file:
                                     'fraud_city_pct', 'fraud_city_rank', 'fraud_state_pct', 'fraud_state_rank',
                                     'job_encoded', 'trans_day', 'trans_month', 'trans_year', 'trans_hour', 
                                     'trans_weekday', 'age', 'distance_to_merch']
-                scaler = joblib.load("streamlit_app/scaler.pkl")                                # Cargar el escalador
+                scaler = joblib.load("streamlit_app/models/scaler.pkl")                                # Cargar el escalador
                 features_scaled = features.copy()                                               # Realizar una copia de las características
                 features_scaled[cols_to_scale] = scaler.transform(features[cols_to_scale])      # Realizar la escala para columnas específicas
                 features_scaled = pd.DataFrame(features_scaled, columns=features.columns)       # Retransformar en dataframe
@@ -142,7 +142,7 @@ if success_file:
                 # Cargar el modelol de machine learning
                 msg_ML_loading.write("Aplicando el modelo de Machine Learning...")
                 model = CatBoostClassifier()
-                model.load_model('streamlit_app/catboost_bestmodel.cbm')
+                model.load_model('streamlit_app/models/catboost_bestmodel.cbm')
                 
                 # Aplicar el modelo de machine learning a los datos
                 predictions, accuracy, report = catboost_model(features_scaled, target, model)

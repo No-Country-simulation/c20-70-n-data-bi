@@ -21,9 +21,9 @@ if codigo_acceso == "1234":
     n_users = 999
 
     # Carga de datasets con el top 5 de fraudes
-    top_5_fraud_merch = pd.read_csv('streamlit_app/top_5_fraud_merch.csv')
-    top_5_fraud_city = pd.read_csv('streamlit_app/top_5_fraud_city.csv')
-    top_5_fraud_state = pd.read_csv('streamlit_app/top_5_fraud_state.csv')
+    top_5_fraud_merch = pd.read_csv('streamlit_app/data/top_5_fraud_merch.csv')
+    top_5_fraud_city = pd.read_csv('streamlit_app/data/top_5_fraud_city.csv')
+    top_5_fraud_state = pd.read_csv('streamlit_app/data/top_5_fraud_state.csv')
 
     # Renombrar columnas
     top_5_fraud_merch.columns = ['Vendedor', 'Fraude [%]', 'Fraudes [#]']
@@ -52,7 +52,7 @@ if codigo_acceso == "1234":
         st.subheader("Estados con Fraude")
         st.dataframe(top_5_fraud_state.set_index(top_5_fraud_state.columns[0]))
     
-    global_frauds_per_day = pd.read_csv('./streamlit_app/global_frauds_per_day.csv', index_col='trans_date_trans_time')
+    global_frauds_per_day = pd.read_csv('./streamlit_app/data/global_frauds_per_day.csv', index_col='trans_date_trans_time')
 
     # Crear una figura de Plotly para la gráfica de línea
     fig = go.Figure()
