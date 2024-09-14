@@ -6,8 +6,8 @@ st.title("2.- Previsualización de tablas relacionales para la carga en PostgreS
 
 st.sidebar.write("Guía de usuario:")
 st.sidebar.write("- Se generan 5 tablas relacionales: Usuarios, vendedores, predicciones, ubicaciones y transacciones.")
-st.sidebar.write("- PSe muestra una previsualización [5 filas] de cada tabla generada.")
-st.sidebar.write("- Haz click en el botón 'Cargar datos a la base de datos' para iniciar el proceso.")
+st.sidebar.write("- Se muestra una previsualización [5 filas] de cada tabla generada.")
+st.sidebar.write("- Haz click en el botón 'Cargar tablas a la base de datos' para iniciar el proceso.")
 
 # Verificar si el acceso ha sido concedido
 if not st.session_state.get('access_granted', False):
@@ -59,7 +59,7 @@ st.write("Tabla: Transacciones [primeras 5 filas]")
 st.dataframe(transactions.head())                        
 
 # Botón para cargar los datos a la base de datos
-if st.button("Cargar datos a la base de datos"):
+if st.button("Cargar tablas a la base de datos"):
     try:
         users.to_sql('users', engine, if_exists='append', index=False)
         st.success("La tabla de Usuarios ha sido cargada en la Base de datos.")
