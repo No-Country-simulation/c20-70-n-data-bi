@@ -16,6 +16,9 @@ Este proyecto tiene como objetivo desarrollar un sistema de predicción de fraud
 
 El proyecto no solo permite la predicción en tiempo real, sino que también facilita la carga de información a una base de datos para futuras consultas y análisis visuales en Power BI.
 
+Enlace a la página web: https://c20-70-n-data-bi.onrender.com (Contraseña para desbloquear: 1234).
+Enlace a los datos de prueba: https://drive.google.com/file/d/17tBUKqscjMU2q9bcxtAJz1V6AT7ztdYL/view?usp=sharing (Directamente en formato .zip se suben en la página de carga de datos).
+La base de datos esta en PostgreSQL. 
 
 # Entregables:
 - Pagina Web: El **usuario** podra cargar un .zip que contenga el archivo .csv con los datos que necesitan predicción. La pagina predice en tiempo real, carga los datos a la base de datos en PostgreSQL y devuelve feedback en forma de visualizaciones. 
