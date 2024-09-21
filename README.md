@@ -19,6 +19,7 @@ El proyecto no solo permite la predicción en tiempo real, sino que también fac
 ## Demo
 Enlace a la página web: https://c20-70-n-data-bi.onrender.com (Contraseña para desbloquear: 1234).
 Enlace a los datos de prueba: https://drive.google.com/file/d/17tBUKqscjMU2q9bcxtAJz1V6AT7ztdYL/view?usp=sharing (Directamente en formato .zip se suben en la página de carga de datos).
+Enlace al EDA en PowerBi: https://app.powerbi.com/view?r=eyJrIjoiNDdkMzgyOGYtNjc4YS00ZTU2LTg2OGItZWNiMGU5OTE4NzEyIiwidCI6IjJiYmY5MzNkLTg1N2EtNDQyNy1iMTJmLTdiMzFkMWY0MGMxYSIsImMiOjR9
 La base de datos esta en PostgreSQL. 
 
 # Entregables:
